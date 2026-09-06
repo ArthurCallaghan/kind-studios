@@ -8,7 +8,7 @@
 .icon svg { display: block; width: 28px; height: 28px; }
 .asterisk-icon { font-size: 1.9rem; font-weight: 400; transform: translateY(-2px); }
 .brand-mark { padding: 0 !important; overflow: hidden; background: transparent !important; }
-.brand-mark img { display: block; width: 100%; height: 100%; }
+.brand-mark img { display: block; width: 100%; height: 100%; object-fit: contain; object-position: center; }
 .accent-lilac { border-color: #8b5cf6; }
 .accent-lilac > span { background: #f0eaff; color: #7c3aed; }
 .accent-rose { border-color: #e11d7a; }

@@ -173,7 +173,7 @@
       return;
     }
     try {
-      setStatus(status, "Acerca la tarjeta al teléfono…");
+      setStatus(status, "Esperando la tarjeta…");
       nfcController = new AbortController();
       const reader = new NDEFReader();
       await reader.scan({ signal: nfcController.signal });
@@ -187,18 +187,28 @@
   }
   function stopNfc() { if (nfcController) { nfcController.abort(); nfcController = null; } }
 
+  // La cámara frontal es la predeterminada en móviles; en ordenador el navegador elegirá la webcam habitual.
   async function startScanner(camera = activeCamera) {
     const dialog = $("#scanner-dialog"), status = $("#scanner-status");
     activeCamera = camera;
     if (!dialog.open) dialog.showModal();
     if (!window.Html5Qrcode) { setStatus(status, "No se ha podido cargar el escáner. Comprueba tu conexión.", "error"); return; }
     try {
+      setStatus(status, "Abriendo la cámara…");
       scanner = new Html5Qrcode("reader");
       await scanner.start({ facingMode: activeCamera }, { fps: 10, qrbox: { width: 260, height: 150 }, formatsToSupport: [Html5QrcodeSupportedFormats.CODE_128, Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.EAN_8] }, (code) => validate(code, status, null, "barcode"));
       setStatus(status, activeCamera === "user" ? "Usa la cámara frontal para enfocar el código de barras." : "Usa la cámara trasera para enfocar el código de barras.");
-    } catch (_) { setStatus(status, "No se pudo abrir la cámara. Acepta el permiso y prueba de nuevo.", "error"); }
+    } catch (_) {
+      // Un intento fallido puede dejar el visor creado; límpialo para que el cambio manual de cámara funcione.
+      if (scanner) {
+        try { await scanner.stop(); } catch (_) {}
+        try { scanner.clear(); } catch (_) {}
+      }
+      scanner = null;
+      setStatus(status, "No se pudo iniciar la cámara. Comprueba el permiso o pulsa “Cambiar cámara”.", "error");
+    }
   }
-  async function stopScanner() { if (scanner) { try { await scanner.stop(); } catch (_) {} scanner.clear(); scanner = null; } }
+  async function stopScanner() { if (scanner) { try { await scanner.stop(); } catch (_) {} try { scanner.clear(); } catch (_) {} scanner = null; } }
   async function switchCamera() { await stopScanner(); await startScanner(activeCamera === "user" ? "environment" : "user"); }
 
   $("#brand-name").textContent = cfg.appName;
