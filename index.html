@@ -9,7 +9,7 @@
   <link rel="icon" href="icon.svg?v=20260906-3" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon.svg?v=20260906-3">
   <link rel="stylesheet" href="style.css?v=20260906-2">
-  <link rel="stylesheet" href="style-overrides.css?v=20260906-5">
+  <link rel="stylesheet" href="style-overrides.css?v=20260906-7">
   <title>Kind Studios</title>
 </head>
 <body>
@@ -31,9 +31,9 @@
 
     <section id="dashboard-screen" class="screen" aria-label="Panel principal">
       <header class="topbar"><div><p class="eyebrow">PANEL PRIVADO</p><h1 id="greeting">¡Hola!</h1><p id="current-date-time" class="current-date-time" aria-live="off"></p></div><button id="logout-button" class="icon-button" title="Cerrar sesión" aria-label="Cerrar sesión"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M26 10H13v28h13M24 24h15m-6-7 7 7-7 7" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"/></svg></button></header>
-      <p class="dashboard-intro">Selecciona una sección.</p>
+      <div class="dashboard-spacer" aria-hidden="true"></div>
       <nav class="dashboard-grid" aria-label="Secciones">
-        <button class="dashboard-card accent-blue" data-section="schedule" data-profiles="admin staff"><span aria-hidden="true"><svg viewBox="0 0 48 48"><rect x="8" y="11" width="32" height="29" rx="4" fill="none" stroke="currentColor" stroke-width="3"/><path d="M8 20h32M17 7v8M31 7v8M17 27h.01M24 27h.01M31 27h.01M17 34h.01M24 34h.01" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="3"/></svg></span><strong>Horario del día</strong><small>PDF con el horario de la tarde</small></button>
+        <button class="dashboard-card accent-blue" data-section="schedule" data-profiles="admin staff"><span aria-hidden="true"><svg viewBox="0 0 48 48"><rect x="8" y="11" width="32" height="29" rx="4" fill="none" stroke="currentColor" stroke-width="3"/><path d="M8 20h32M17 7v8M31 7v8M17 27h.01M24 27h.01M31 27h.01M17 34h.01M24 34h.01" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="3"/></svg></span><strong>Horario</strong><small>PDF con el horario de la tarde</small></button>
         <button class="dashboard-card accent-lilac" data-collection="teatroMusical" data-profiles="admin staff guestStandard"><span aria-hidden="true">♬</span><strong>Teatro Musical</strong><small>Guiones</small></button>
         <button class="dashboard-card accent-rose" data-collection="viceGroup" data-profiles="admin staff member guestStandard" data-order-member="1"><span class="treble-clef-icon" aria-hidden="true">𝄞</span><strong>Vice Group</strong><small>Partituras</small></button>
         <button class="dashboard-card accent-green" data-collection="threeOfAKind" data-profiles="admin staff member" data-order-member="2"><span class="clover-icon" aria-hidden="true">♣</span><strong>Three of a Kind</strong><small>Guiones</small></button>
@@ -43,7 +43,7 @@
     </section>
 
     <section id="schedule-screen" class="screen" data-theme="schedule" aria-labelledby="schedule-title">
-      <header class="topbar"><button class="back-button" data-back="dashboard" aria-label="Volver">‹</button><div><p class="eyebrow">CONSULTA</p><h1 id="schedule-title">Horario del día</h1></div></header>
+      <header class="topbar"><button class="back-button" data-back="dashboard" aria-label="Volver">‹</button><div><p class="eyebrow">CONSULTA</p><h1 id="schedule-title">Horario</h1></div></header>
       <div class="date-controls"><button id="previous-day" aria-label="Día anterior">‹</button><button id="today-button" class="today-button">Hoy</button><button id="next-day" aria-label="Día siguiente">›</button></div>
       <article id="schedule-card" class="schedule-card"></article>
     </section>
@@ -77,7 +77,7 @@
 
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <script src="config.js?v=20260906-7"></script>
-  <script src="app.js?v=20260906-13"></script>
+  <script src="config.js?v=20260906-8"></script>
+  <script src="app.js?v=20260906-16"></script>
 </body>
 </html>

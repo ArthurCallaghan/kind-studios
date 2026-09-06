@@ -6,6 +6,7 @@
   const date = new Date(); date.setHours(0, 0, 0, 0);
   let selectedDate = new Date(date);
   let selectedChecklistKey = null;
+  let archivedChecklistStatus = null;
   let scanner = null;
   let nfcController = null;
   // En móvil se abre primero la cámara frontal; en ordenador, la webcam habitual.
@@ -18,12 +19,34 @@
 
   // No usar toISOString(): cerca de medianoche puede restar un día por usar UTC.
   const formatKey = (value) => `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}-${String(value.getDate()).padStart(2, "0")}`;
-  const checklistKeys = Object.keys(cfg.checklists || {}).sort();
+  const scheduleStart = cfg.scheduleRange?.start || "2026-09-04";
+  const scheduleEnd = cfg.scheduleRange?.end || "2027-06-18";
+  const dateFromKey = (key) => new Date(`${key}T12:00:00`);
+  const buildFridayKeys = (start, end) => {
+    const result = [], cursor = dateFromKey(start), last = dateFromKey(end);
+    while (cursor.getDay() !== 5) cursor.setDate(cursor.getDate() + 1);
+    while (cursor <= last) { result.push(formatKey(cursor)); cursor.setDate(cursor.getDate() + 7); }
+    return result;
+  };
+  const checklistKeys = buildFridayKeys(cfg.checklistRange?.start || scheduleStart, cfg.checklistRange?.end || scheduleEnd);
+  if (formatKey(selectedDate) < scheduleStart) selectedDate = dateFromKey(scheduleStart);
+  if (formatKey(selectedDate) > scheduleEnd) selectedDate = dateFromKey(scheduleEnd);
   selectedChecklistKey = checklistKeys.find((key) => key >= formatKey(date)) || checklistKeys.at(-1) || null;
   const isPlaceholder = (url) => !url || /REEMPLAZA/i.test(url);
   const setStatus = (element, message, type = "") => { element.textContent = message; element.className = `status ${type}`; };
   const showScreen = (id) => { screens.forEach((screen) => screen.classList.toggle("active", screen.id === `${id}-screen`)); window.scrollTo(0, 0); };
   const findUser = (code) => cfg.users.find((user) => String(user.code).trim().toLowerCase() === String(code).trim().toLowerCase());
+
+  async function loadArchivedChecklistStatus() {
+    try {
+      const response = await fetch("checklist-status.json", { cache: "no-store" });
+      if (!response.ok) return;
+      archivedChecklistStatus = await response.json();
+      if ($("#checklist-screen").classList.contains("active")) renderChecklist();
+    } catch (_) {
+      // Sin conexión se conservan las marcas locales del dispositivo.
+    }
+  }
 
   function updateClock() {
     const now = new Date();
@@ -96,6 +119,8 @@
     const label = formatDateLabel(selectedDate);
     const card = $("#schedule-card");
     $("#today-button").classList.toggle("active", key === formatKey(date));
+    $("#previous-day").disabled = key <= scheduleStart;
+    $("#next-day").disabled = key >= scheduleEnd;
     if (!entry) {
       card.innerHTML = `<p class="schedule-date">${label}</p><h2>No hay horarios programados</h2><p>No hay horarios programados para esta fecha.</p>`;
       return;
@@ -115,13 +140,17 @@
     const entry = cfg.checklists?.[selectedChecklistKey] || {};
     const referenceKey = checklistKeys.find((key) => key >= formatKey(date)) || checklistKeys.at(-1);
     $("#checklist-today-button").classList.toggle("active", selectedChecklistKey === referenceKey);
+    const checklistIndex = checklistKeys.indexOf(selectedChecklistKey);
+    $("#previous-checklist").disabled = checklistIndex <= 0;
+    $("#next-checklist").disabled = checklistIndex >= checklistKeys.length - 1;
     const groupKeys = entry.groups || ["teatroGroup3", "teatroGroup4"];
     const groups = cfg.checklistGroups || {};
     card.innerHTML = `<p class="schedule-date">${formatDateLabel(selected)}</p><h2>Checklist de alumno/as</h2><div class="checklist-groups">${groupKeys.map((key) => {
       const group = groups[key]; if (!group) return "";
-      const state = getChecklistState(key);
+      const archived = selectedChecklistKey < formatKey(date);
+      const state = getChecklistState(key, group.students, archived);
       const time = group.time ? `<small>${group.time}</small>` : "";
-      return `<details class="checklist-disclosure"><summary><span class="disclosure-title">${group.title}${time}</span><span class="disclosure-chevron">›</span></summary><div class="checklist-student-list">${group.students.map((student, index) => `<label class="checklist-student"><input type="checkbox" data-checklist-student="${index}" data-checklist-group="${key}"${state[index] ? " checked" : ""}><span>${student}</span></label>`).join("")}</div></details>`;
+      return `<details class="checklist-disclosure"><summary><span class="disclosure-title">${group.title}${time}</span><span class="disclosure-chevron">›</span></summary><div class="checklist-student-list">${group.students.map((student, index) => `<label class="checklist-student"><input type="checkbox" data-checklist-student="${index}" data-checklist-group="${key}"${state[index] ? " checked" : ""}${archived ? " disabled" : ""}><span>${student}</span></label>`).join("")}</div></details>`;
     }).join("")}</div>`;
   }
 
@@ -132,9 +161,22 @@
     renderChecklist();
   }
 
+  function moveSchedule(step) {
+    const candidate = new Date(selectedDate);
+    candidate.setDate(candidate.getDate() + step);
+    const key = formatKey(candidate);
+    if (key < scheduleStart || key > scheduleEnd) return;
+    selectedDate = candidate;
+    renderSchedule();
+  }
+
   function checklistStorageKey(groupKey) { return `kind-studios-checklist-${selectedChecklistKey}-${groupKey}`; }
 
-  function getChecklistState(groupKey) {
+  function getChecklistState(groupKey, students, archived) {
+    const checkedStudents = archived && archivedChecklistStatus?.dates?.[selectedChecklistKey]?.[groupKey]?.checkedStudents;
+    if (Array.isArray(checkedStudents)) {
+      return Object.fromEntries(students.map((student, index) => [index, checkedStudents.includes(student)]));
+    }
     try { return JSON.parse(localStorage.getItem(checklistStorageKey(groupKey)) || "{}"); } catch (_) { return {}; }
   }
 
@@ -264,6 +306,7 @@
   // Una recarga exige identificarse de nuevo.
   sessionStorage.removeItem("controlAccessSession");
   updateClock();
+  loadArchivedChecklistStatus();
   setInterval(updateClock, 30_000);
   $("#nfc-button").addEventListener("click", startNfc);
   // No pasar el evento del clic a startScanner: se interpretaría erróneamente como una cámara.
@@ -286,9 +329,9 @@
   document.addEventListener("click", (event) => { const button = event.target.closest("[data-pdf]"); if (button) openDocument(button.dataset.pdf, button.dataset.pdfTitle, button.dataset.pdfBack, button.dataset.pdfTheme); });
   document.addEventListener("change", (event) => { if (event.target.matches("[data-checklist-student]")) saveChecklistState(event.target.dataset.checklistGroup); });
   document.querySelectorAll("[data-back]").forEach((button) => button.addEventListener("click", () => showScreen(button.dataset.back)));
-  $("#previous-day").addEventListener("click", () => { selectedDate.setDate(selectedDate.getDate() - 1); renderSchedule(); });
-  $("#next-day").addEventListener("click", () => { selectedDate.setDate(selectedDate.getDate() + 1); renderSchedule(); });
-  $("#today-button").addEventListener("click", () => { selectedDate = new Date(date); renderSchedule(); });
+  $("#previous-day").addEventListener("click", () => moveSchedule(-1));
+  $("#next-day").addEventListener("click", () => moveSchedule(1));
+  $("#today-button").addEventListener("click", () => { selectedDate = new Date(date); if (formatKey(selectedDate) < scheduleStart) selectedDate = dateFromKey(scheduleStart); if (formatKey(selectedDate) > scheduleEnd) selectedDate = dateFromKey(scheduleEnd); renderSchedule(); });
   $("#previous-checklist").addEventListener("click", () => moveChecklist(-1));
   $("#next-checklist").addEventListener("click", () => moveChecklist(1));
   $("#checklist-today-button").addEventListener("click", () => {

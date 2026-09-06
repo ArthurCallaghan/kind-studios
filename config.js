@@ -17,6 +17,7 @@ window.APP_CONFIG = {
     { code: "member-24082012", username: "", name: "Amanda Cid", role: "Member", profile: "member" },
     { code: "guest-standard", username: "", name: "Invitado", role: "Guest", profile: "guestStandard" }
   ],
+  scheduleRange: { start: "2026-09-04", end: "2027-06-18" },
   // Usa fechas YYYY-MM-DD. Cuando haya PDF, usa el nombre DD.MM.AAAA.pdf (ej.: 11.09.2026.pdf).
   schedules: {
     "2026-09-11": { title: "Horario aún no disponible", pdf: "", note: "PDF no publicado todavía." },
@@ -35,6 +36,7 @@ window.APP_CONFIG = {
     "2026-12-11": { title: "Horario aún no disponible", pdf: "", note: "PDF no publicado todavía." },
     "2026-12-18": { title: "Horario aún no disponible", pdf: "", note: "PDF no publicado todavía." }
   },
+  checklistRange: { start: "2026-09-04", end: "2027-06-18" },
   // Checklist de administración: solo se muestran los viernes incluidos aquí.
   checklists: {
     "2026-09-04": {}, "2026-09-11": {}, "2026-09-18": {}, "2026-09-25": {},
