@@ -13,8 +13,8 @@ window.APP_CONFIG = {
     { code: "admin-19072007", username: "", name: "Pau Escobedo", role: "Administrador", profile: "admin" },
     { code: "staff-01052010", username: "", name: "Mariona Escobedo", role: "Staff", profile: "staff" },
     { code: "staff-09092011", username: "", name: "Pau Fermosel", role: "Staff", profile: "staff" },
-    { code: "guest-14102009", username: "", name: "Carles González", role: "Guest", profile: "guest" },
-    { code: "guest-24082012", username: "", name: "Amanda Cid", role: "Guest", profile: "guest" },
+    { code: "member-14102009", username: "", name: "Carles González", role: "Member", profile: "member" },
+    { code: "member-24082012", username: "", name: "Amanda Cid", role: "Member", profile: "member" },
     { code: "guest-standard", username: "", name: "Invitado", role: "Guest", profile: "guestStandard" }
   ],
   // Usa fechas YYYY-MM-DD. Cuando haya PDF, usa el nombre DD.MM.AAAA.pdf (ej.: 11.09.2026.pdf).
@@ -34,6 +34,19 @@ window.APP_CONFIG = {
     "2026-12-04": { title: "Horario aún no disponible", pdf: "", note: "PDF no publicado todavía." },
     "2026-12-11": { title: "Horario aún no disponible", pdf: "", note: "PDF no publicado todavía." },
     "2026-12-18": { title: "Horario aún no disponible", pdf: "", note: "PDF no publicado todavía." }
+  },
+  // Checklist de administración: solo se muestran los viernes incluidos aquí.
+  checklists: {
+    "2026-09-04": {}, "2026-09-11": {}, "2026-09-18": {}, "2026-09-25": {},
+    "2026-10-02": {}, "2026-10-09": { groups: ["teatroGroup3", "teatroGroup4", "viceGroup"] }, "2026-10-16": { groups: ["teatroGroup3", "teatroGroup4", "viceGroup"] }, "2026-10-23": { groups: ["teatroGroup3", "teatroGroup4", "viceGroup"] }, "2026-10-30": {},
+    "2026-11-06": { groups: ["teatroGroup3", "teatroGroup4", "viceGroup"] }, "2026-11-13": { groups: ["teatroGroup3", "teatroGroup4", "viceGroup"] }, "2026-11-20": { groups: ["teatroGroup3", "teatroGroup4", "viceGroup"] }, "2026-11-27": {},
+    "2026-12-04": {}, "2026-12-11": {}, "2026-12-18": {}
+  },
+  // Sustituye "Alumno 1", etc. por los nombres reales cuando los tengas.
+  checklistGroups: {
+    teatroGroup3: { title: "Teatro Musical Grupo 3", time: "17:30 - 18:45", students: ["Alumno 1", "Alumno 2", "Alumno 3", "Alumno 4", "Alumno 5", "Alumno 6", "Alumno 7", "Alumno 8"] },
+    teatroGroup4: { title: "Teatro Musical Grupo 4", time: "18:45 - 20:15", students: ["Alumno 1", "Alumno 2", "Alumno 3", "Alumno 4", "Alumno 5", "Alumno 6", "Alumno 7", "Alumno 8", "Alumno 9", "Alumno 10", "Alumno 11", "Alumno 12", "Alumno 13", "Alumno 14", "Alumno 15", "Alumno 16"] },
+    viceGroup: { title: "Vice Group", time: "", students: ["Uxía López", "Lucía Curzel", "Candela Blanco", "Júlia Moimeau", "Nivia Dotto"] }
   },
   collections: {
     threeOfAKind: [

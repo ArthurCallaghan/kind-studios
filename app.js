@@ -5,6 +5,7 @@
   const screens = document.querySelectorAll(".screen");
   const date = new Date(); date.setHours(0, 0, 0, 0);
   let selectedDate = new Date(date);
+  let selectedChecklistKey = null;
   let scanner = null;
   let nfcController = null;
   // En móvil se abre primero la cámara frontal; en ordenador, la webcam habitual.
@@ -17,6 +18,8 @@
 
   // No usar toISOString(): cerca de medianoche puede restar un día por usar UTC.
   const formatKey = (value) => `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}-${String(value.getDate()).padStart(2, "0")}`;
+  const checklistKeys = Object.keys(cfg.checklists || {}).sort();
+  selectedChecklistKey = checklistKeys.find((key) => key >= formatKey(date)) || checklistKeys.at(-1) || null;
   const isPlaceholder = (url) => !url || /REEMPLAZA/i.test(url);
   const setStatus = (element, message, type = "") => { element.textContent = message; element.className = `status ${type}`; };
   const showScreen = (id) => { screens.forEach((screen) => screen.classList.toggle("active", screen.id === `${id}-screen`)); window.scrollTo(0, 0); };
@@ -53,7 +56,7 @@
       const allowed = card.dataset.profiles.split(" ").includes(profile);
       card.hidden = !allowed;
       card.classList.toggle("cnt-card", (card.dataset.wideProfiles || "").split(" ").includes(profile));
-      card.style.order = profile === "guest" ? (card.dataset.orderGuest || "0") : "0";
+      card.style.order = profile === "member" ? (card.dataset.orderMember || "0") : "0";
     });
   }
 
@@ -79,15 +82,20 @@
     setStatus(statusElement, messages[method] || "Acceso incorrecto.", "error");
   }
 
-  function renderSchedule() {
-    const key = formatKey(selectedDate);
-    const entry = cfg.schedules[key];
-    const dateParts = new Intl.DateTimeFormat("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric" }).formatToParts(selectedDate);
+  function formatDateLabel(value) {
+    const dateParts = new Intl.DateTimeFormat("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric" }).formatToParts(value);
     const part = (type) => dateParts.find((item) => item.type === type)?.value || "";
     const weekday = `${part("weekday").charAt(0).toUpperCase()}${part("weekday").slice(1)}`;
     const month = `${part("month").charAt(0).toUpperCase()}${part("month").slice(1)}`;
-    const label = `${weekday}, ${part("day")} de ${month} de ${part("year")}`;
+    return `${weekday}, ${part("day")} de ${month} de ${part("year")}`;
+  }
+
+  function renderSchedule() {
+    const key = formatKey(selectedDate);
+    const entry = cfg.schedules[key];
+    const label = formatDateLabel(selectedDate);
     const card = $("#schedule-card");
+    $("#today-button").classList.toggle("active", key === formatKey(date));
     if (!entry) {
       card.innerHTML = `<p class="schedule-date">${label}</p><h2>No hay horarios programados</h2><p>No hay horarios programados para esta fecha.</p>`;
       return;
@@ -95,6 +103,46 @@
     const link = isPlaceholder(entry.pdf) ? "" : `<button class="schedule-open-button" type="button" data-pdf="${entry.pdf}" data-pdf-title="${entry.title || "Horario del día"}" data-pdf-back="schedule" data-pdf-theme="schedule">Ver horario<span>›</span></button>`;
     const note = entry.note ? `<p>${entry.note}</p>` : "";
     card.innerHTML = `<p class="schedule-date">${label}</p><h2>${entry.title || "Horario"}</h2>${note}${link}`;
+  }
+
+  function renderChecklist() {
+    const card = $("#checklist-card");
+    if (!selectedChecklistKey) {
+      card.innerHTML = `<h2>No hay checklists programadas</h2>`;
+      return;
+    }
+    const selected = new Date(`${selectedChecklistKey}T12:00:00`);
+    const entry = cfg.checklists?.[selectedChecklistKey] || {};
+    const referenceKey = checklistKeys.find((key) => key >= formatKey(date)) || checklistKeys.at(-1);
+    $("#checklist-today-button").classList.toggle("active", selectedChecklistKey === referenceKey);
+    const groupKeys = entry.groups || ["teatroGroup3", "teatroGroup4"];
+    const groups = cfg.checklistGroups || {};
+    card.innerHTML = `<p class="schedule-date">${formatDateLabel(selected)}</p><h2>Checklist de alumno/as</h2><div class="checklist-groups">${groupKeys.map((key) => {
+      const group = groups[key]; if (!group) return "";
+      const state = getChecklistState(key);
+      const time = group.time ? `<small>${group.time}</small>` : "";
+      return `<details class="checklist-disclosure"><summary><span class="disclosure-title">${group.title}${time}</span><span class="disclosure-chevron">›</span></summary><div class="checklist-student-list">${group.students.map((student, index) => `<label class="checklist-student"><input type="checkbox" data-checklist-student="${index}" data-checklist-group="${key}"${state[index] ? " checked" : ""}><span>${student}</span></label>`).join("")}</div></details>`;
+    }).join("")}</div>`;
+  }
+
+  function moveChecklist(step) {
+    if (!selectedChecklistKey) return;
+    const index = checklistKeys.indexOf(selectedChecklistKey);
+    selectedChecklistKey = checklistKeys[Math.max(0, Math.min(checklistKeys.length - 1, index + step))];
+    renderChecklist();
+  }
+
+  function checklistStorageKey(groupKey) { return `kind-studios-checklist-${selectedChecklistKey}-${groupKey}`; }
+
+  function getChecklistState(groupKey) {
+    try { return JSON.parse(localStorage.getItem(checklistStorageKey(groupKey)) || "{}"); } catch (_) { return {}; }
+  }
+
+  function saveChecklistState(groupKey) {
+    if (!groupKey) return;
+    const state = {};
+    document.querySelectorAll(`[data-checklist-student][data-checklist-group="${groupKey}"]`).forEach((input) => { state[input.dataset.checklistStudent] = input.checked; });
+    localStorage.setItem(checklistStorageKey(groupKey), JSON.stringify(state));
   }
 
   async function openDocument(pdf, title, backTarget = "dashboard", theme = "schedule") {
@@ -229,14 +277,25 @@
   $("#stop-nfc").addEventListener("click", stopNfc);
   $("#nfc-dialog").addEventListener("close", stopNfc);
   $("#logout-button").addEventListener("click", () => { sessionStorage.removeItem("controlAccessSession"); showScreen("access"); const status = $("#access-status"); setStatus(status, "Sesión cerrada"); setTimeout(() => { if (status.textContent === "Sesión cerrada") setStatus(status, ""); }, 10_000); });
-  document.querySelectorAll("[data-section]").forEach((button) => button.addEventListener("click", () => { if (button.dataset.section === "schedule") { renderSchedule(); showScreen("schedule"); } }));
+  document.querySelectorAll("[data-section]").forEach((button) => button.addEventListener("click", () => {
+    if (button.dataset.section === "schedule") { renderSchedule(); showScreen("schedule"); }
+    if (button.dataset.section === "checklist") { renderChecklist(); showScreen("checklist"); }
+  }));
   document.querySelectorAll("[data-collection]").forEach((button) => button.addEventListener("click", () => showCollection(button.dataset.collection)));
   document.querySelectorAll("[data-external]").forEach((button) => button.addEventListener("click", () => openExternal(button.dataset.external)));
   document.addEventListener("click", (event) => { const button = event.target.closest("[data-pdf]"); if (button) openDocument(button.dataset.pdf, button.dataset.pdfTitle, button.dataset.pdfBack, button.dataset.pdfTheme); });
+  document.addEventListener("change", (event) => { if (event.target.matches("[data-checklist-student]")) saveChecklistState(event.target.dataset.checklistGroup); });
   document.querySelectorAll("[data-back]").forEach((button) => button.addEventListener("click", () => showScreen(button.dataset.back)));
   $("#previous-day").addEventListener("click", () => { selectedDate.setDate(selectedDate.getDate() - 1); renderSchedule(); });
   $("#next-day").addEventListener("click", () => { selectedDate.setDate(selectedDate.getDate() + 1); renderSchedule(); });
   $("#today-button").addEventListener("click", () => { selectedDate = new Date(date); renderSchedule(); });
+  $("#previous-checklist").addEventListener("click", () => moveChecklist(-1));
+  $("#next-checklist").addEventListener("click", () => moveChecklist(1));
+  $("#checklist-today-button").addEventListener("click", () => {
+    selectedChecklistKey = checklistKeys.find((key) => key >= formatKey(date)) || checklistKeys.at(-1) || null;
+    renderChecklist();
+  });
+  $("#checklist-today-button").textContent = date.getDay() === 5 ? "Hoy" : "Próximo viernes";
   const pinchDistance = (touches) => Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY);
   const viewer = $("#document-viewer");
   viewer.addEventListener("touchstart", (event) => {
