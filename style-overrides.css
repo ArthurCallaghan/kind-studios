@@ -6,11 +6,12 @@
 .dashboard-card > span { width: 40px; height: 40px; }
 .dashboard-card > span svg,
 .icon svg { display: block; width: 28px; height: 28px; }
+.asterisk-icon { font-size: 1.9rem; font-weight: 400; transform: translateY(-2px); }
 .accent-lilac { border-color: #8b5cf6; }
 .accent-lilac > span { background: #f0eaff; color: #7c3aed; }
 .accent-rose { border-color: #e11d7a; }
 .accent-rose > span { background: #fce7f3; color: #db2777; }
-.treble-clef-icon { padding: 0 !important; background: #fce7f3 !important; color: #db2777 !important; font-size: 2.3rem !important; line-height: .9; }
+.treble-clef-icon { padding: 0 !important; background: #fce7f3 !important; color: #db2777 !important; font-size: 2.3rem !important; line-height: .9; transform: translateY(-2px); }
 .cnt-card { grid-column: 1 / -1; min-height: 104px; display: grid; grid-template-columns: 40px 1fr; align-items: center; column-gap: 14px; }
 .cnt-card > span { grid-row: 1 / span 2; width: 40px; height: 40px; }
 .cnt-card strong { margin-top: 0; font-size: 1.12rem; }
@@ -22,16 +23,37 @@
 .collection-button span { color: var(--blue); font-size: 1.8rem; }
 .collection-button small { display: block; }
 .collection-button:disabled { cursor: default; color: #94a3b8; background: #f8fafc; box-shadow: none; }
+.collection-button,
+.collection-subbutton,
+.schedule-open-button { border-left: 4px solid var(--section-color, var(--blue)); }
+.schedule-open-button { border-left: 5px solid var(--blue) !important; }
+.schedule-date { text-transform: none !important; }
 .collection-disclosure { overflow: hidden; border: 1px solid var(--line); border-radius: 16px; background: white; box-shadow: 0 5px 18px #1720330c; }
-.collection-disclosure summary { display: flex; align-items: center; justify-content: space-between; min-height: 68px; padding: 16px 18px; cursor: pointer; font-weight: 800; list-style: none; }
+.collection-disclosure summary { display: flex; align-items: center; justify-content: space-between; min-height: 68px; padding: 16px 18px; cursor: pointer; color: var(--ink); font-weight: 800; list-style: none; background: white; border-left: 4px solid var(--section-color, var(--blue)); }
 .collection-disclosure summary::-webkit-details-marker { display: none; }
-.collection-disclosure summary span { color: var(--blue); font-size: 1.8rem; transition: transform .2s ease; }
-.collection-disclosure[open] summary span { transform: rotate(90deg); }
-.collection-sublist { display: grid; gap: 8px; padding: 0 10px 10px; border-top: 1px solid var(--line); }
-.collection-subbutton { display: flex; align-items: center; justify-content: space-between; min-height: 54px; padding: 12px 10px; border: 0; border-radius: 10px; background: #f8fafc; color: var(--ink); text-align: left; font-weight: 700; }
-.collection-subbutton span { color: var(--blue); font-size: 1.4rem; }
+.disclosure-title { display: grid; gap: 2px; }
+.disclosure-title small { color: var(--section-color, var(--blue)); font-size: .75rem; font-weight: 600; }
+.disclosure-chevron { color: var(--section-color, var(--blue)); font-size: 1.8rem; transition: transform .2s ease; }
+.collection-disclosure[open] .disclosure-chevron { transform: rotate(90deg); }
+.collection-sublist { display: grid; gap: 8px; padding: 10px 10px 10px 22px; border-top: 1px solid var(--line); background: #f8fafc; }
+.collection-subbutton { display: flex; align-items: center; justify-content: space-between; min-height: 54px; padding: 12px 10px; border: 1px solid var(--line); border-radius: 10px; background: white; color: var(--ink); text-align: left; font-weight: 700; }
+.collection-subbutton span { color: var(--section-color, var(--blue)); font-size: 1.4rem; }
+#schedule-screen, #collection-screen, #document-screen { --section-color: var(--blue); --section-tint: #eaf1ff; }
+#collection-screen[data-theme="threeOfAKind"], #document-screen[data-theme="threeOfAKind"] { --section-color: var(--green); --section-tint: #e2f7ef; }
+#collection-screen[data-theme="teatroMusical"], #document-screen[data-theme="teatroMusical"] { --section-color: #7c3aed; --section-tint: #f0eaff; }
+#collection-screen[data-theme="viceGroup"], #document-screen[data-theme="viceGroup"] { --section-color: #db2777; --section-tint: #fce7f3; }
+#collection-screen .eyebrow, #document-screen .eyebrow { color: var(--section-color); }
+#collection-screen .back-button, #document-screen .back-button { color: var(--section-color); background: var(--section-tint); }
+#collection-screen .collection-button span { color: var(--section-color); }
+#document-screen .pdf-controls button { color: var(--section-color); border-color: var(--section-color); }
 .schedule-open-button { display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: 68px; margin-top: 22px; padding: 16px 18px; border: 1px solid var(--line); border-radius: 16px; background: white; color: var(--ink); text-align: left; font-weight: 800; box-shadow: 0 5px 18px #1720330c; }
 .schedule-open-button span { color: var(--blue); font-size: 1.8rem; }
 .pdf-viewer { display: flex; align-items: flex-start; gap: 18px; height: calc(100dvh - 160px); min-height: 420px; margin-top: 28px; padding: 14px; overflow: auto hidden; scroll-snap-type: x mandatory; border: 1px solid var(--line); border-radius: 18px; background: #e8edf5; color: var(--muted); }
 .pdf-page { flex: 0 0 auto; width: max-content; scroll-snap-align: start; background: white; box-shadow: 0 4px 16px #17203324; }
+.pdf-viewer[style*="--pinch-preview"] .pdf-page { transform: scale(var(--pinch-preview)); transform-origin: top left; }
 .pdf-page canvas { display: block; }
+.pdf-fallback { width: 100%; min-width: 100%; height: 100%; border: 0; background: white; }
+.schedule-open-button { border-left: 5px solid var(--blue) !important; }
+.pdf-controls { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 18px; }
+.pdf-controls button { display: grid; place-items: center; width: 38px; height: 38px; border: 1px solid var(--line); border-radius: 11px; background: white; color: var(--navy); font-size: 1.35rem; font-weight: 800; }
+.pdf-controls span { min-width: 54px; color: var(--muted); text-align: center; font-size: .9rem; font-weight: 800; }

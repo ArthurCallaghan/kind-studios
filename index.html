@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#14213d">
   <meta name="description" content="Control de acceso móvil">
   <link rel="manifest" href="manifest.webmanifest">
@@ -24,7 +24,7 @@
       <div class="access-options">
         <button id="nfc-button" class="access-card" type="button"><span class="icon" aria-hidden="true"><svg viewBox="0 0 48 48"><rect x="7" y="12" width="17" height="24" rx="3" fill="none" stroke="currentColor" stroke-width="3"/><path d="M29 17c5 4 5 10 0 14M35 12c9 7 9 17 0 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="3"/></svg></span><span><strong>Escanear NFC</strong><small>Acerca tu tarjeta</small></span><span class="arrow">›</span></button>
         <button id="camera-button" class="access-card" type="button"><span class="icon" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M10 18v-5h5M33 13h5v5M38 30v5h-5M15 35h-5v-5M16 20v8M20 18v12M24 18v12M29 18v12M33 20v8" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="3"/></svg></span><span><strong>Escanear código de barras</strong><small>Usa la cámara del teléfono</small></span><span class="arrow">›</span></button>
-        <button id="manual-button" class="access-card" type="button"><span class="icon" aria-hidden="true"><svg viewBox="0 0 48 48"><circle cx="14" cy="24" r="8" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="14" cy="24" r="2.5" fill="currentColor"/><path d="M22 24h18m-5 0v5m-6-5v4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"/></svg></span><span><strong>Introducir clave</strong><small>Escríbela manualmente</small></span><span class="arrow">›</span></button>
+        <button id="manual-button" class="access-card" type="button"><span class="icon asterisk-icon" aria-hidden="true">∗</span><span><strong>Introducir clave</strong><small>Escribe tu clave manualmente</small></span><span class="arrow">›</span></button>
       </div>
       <p id="access-status" class="status" role="status" aria-live="polite"></p>
     </section>
@@ -41,7 +41,7 @@
       </nav>
     </section>
 
-    <section id="schedule-screen" class="screen" aria-labelledby="schedule-title">
+    <section id="schedule-screen" class="screen" data-theme="schedule" aria-labelledby="schedule-title">
       <header class="topbar"><button class="back-button" data-back="dashboard" aria-label="Volver">‹</button><div><p class="eyebrow">CONSULTA</p><h1 id="schedule-title">Horario del día</h1></div></header>
       <div class="date-controls"><button id="previous-day" aria-label="Día anterior">‹</button><button id="today-button" class="today-button">Hoy</button><button id="next-day" aria-label="Día siguiente">›</button></div>
       <article id="schedule-card" class="schedule-card"></article>
@@ -52,7 +52,7 @@
       <div id="collection-list" class="collection-list"></div>
     </section>
 
-    <section id="document-screen" class="screen" aria-labelledby="document-title">
+    <section id="document-screen" class="screen" data-theme="schedule" aria-labelledby="document-title">
       <header class="topbar"><button class="back-button" data-back="dashboard" aria-label="Volver">‹</button><div><p class="eyebrow">PDF</p><h1 id="document-title">Documento</h1></div></header>
       <div id="document-viewer" class="pdf-viewer" aria-live="polite"></div>
     </section>
@@ -64,7 +64,7 @@
     </section>
   </main>
 
-  <dialog id="manual-dialog" class="modal"><form method="dialog"><button class="close-modal" value="cancel" formnovalidate aria-label="Cerrar">×</button><p class="eyebrow">ACCESO MANUAL</p><h2>Introduce tu clave</h2><label for="manual-code">Clave de acceso</label><input id="manual-code" type="password" autocomplete="current-password" inputmode="text" placeholder="••••••••" required><button id="submit-code" class="primary-button" value="default">Acceder</button><p id="manual-status" class="status" role="status"></p></form></dialog>
+  <dialog id="manual-dialog" class="modal"><form method="dialog"><button class="close-modal" value="cancel" formnovalidate aria-label="Cerrar">×</button><p class="eyebrow">ACCESO MANUAL</p><h2>Introduce tus datos</h2><label for="manual-username">Usuario</label><input id="manual-username" autocomplete="username" autocapitalize="none" spellcheck="false" inputmode="text" placeholder="Usuario"><label for="manual-code">Clave de acceso</label><input id="manual-code" type="password" autocomplete="current-password" inputmode="text" placeholder="••••••••" required><button id="submit-code" class="primary-button" value="default">Acceder</button><p id="manual-status" class="status" role="status"></p></form></dialog>
   <dialog id="scanner-dialog" class="modal scanner-modal"><form method="dialog"><button id="stop-camera" class="close-modal" value="cancel" formnovalidate aria-label="Cerrar">×</button><p class="eyebrow">ESCÁNER</p><h2>Apunta al código de barras</h2><div id="reader" aria-label="Vista de cámara"></div><p id="scanner-status" class="status">Solicitando acceso a la cámara…</p></form></dialog>
 
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>

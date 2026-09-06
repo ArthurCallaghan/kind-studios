@@ -7,6 +7,10 @@
   let selectedDate = new Date(date);
   let scanner = null;
   let currentPdfTask = null;
+  let currentPdf = null;
+  let pdfZoom = 1;
+  let pinchStartDistance = 0;
+  let pinchStartZoom = 1;
 
   // No usar toISOString(): cerca de medianoche puede restar un día por usar UTC.
   const formatKey = (value) => `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}-${String(value.getDate()).padStart(2, "0")}`;
@@ -21,7 +25,7 @@
       weekday: "long", day: "numeric", month: "long", year: "numeric"
     }).format(now);
     const time = new Intl.DateTimeFormat("es-ES", { hour: "2-digit", minute: "2-digit" }).format(now);
-    const titledDay = `${day.charAt(0).toUpperCase()}${day.slice(1)}`.replace(/ de ([a-záéíóúñ])/g, (_, letter) => ` de ${letter.toUpperCase()}`);
+    const titledDay = `${day.charAt(0).toUpperCase()}${day.slice(1)}`;
     $("#current-date-time").textContent = `${titledDay} · ${time}`;
   }
 
@@ -48,28 +52,43 @@
     });
   }
 
-  function validate(code, statusElement) {
-    if (login(code)) { setStatus(statusElement, "Acceso concedido.", "success"); return; }
-    setStatus(statusElement, "Código no válido. Inténtalo de nuevo.", "error");
+  function validate(code, statusElement, username = null) {
+    const user = findUser(code);
+    const usernameMatches = username === null || (user && String(user.username || "").trim().toLowerCase() === String(username).trim().toLowerCase());
+    if (user && usernameMatches && login(code)) { setStatus(statusElement, "Acceso concedido.", "success"); return; }
+    setStatus(statusElement, username === null ? "Código no válido. Inténtalo de nuevo." : "Usuario o clave no válidos. Inténtalo de nuevo.", "error");
   }
 
   function renderSchedule() {
     const key = formatKey(selectedDate);
     const entry = cfg.schedules[key];
-    const label = new Intl.DateTimeFormat("es-ES", { weekday: "long", day: "numeric", month: "long" }).format(selectedDate);
+    const dateParts = new Intl.DateTimeFormat("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric" }).formatToParts(selectedDate);
+    const part = (type) => dateParts.find((item) => item.type === type)?.value || "";
+    const weekday = `${part("weekday").charAt(0).toUpperCase()}${part("weekday").slice(1)}`;
+    const month = `${part("month").charAt(0).toUpperCase()}${part("month").slice(1)}`;
+    const label = `${weekday}, ${part("day")} de ${month} de ${part("year")}`;
     const card = $("#schedule-card");
     if (!entry) {
-      card.innerHTML = `<p class="schedule-date">${label}</p><h2>No hay horario publicado</h2><p>Aún no se ha configurado un PDF para esta fecha.</p>`;
+      card.innerHTML = `<p class="schedule-date">${label}</p><h2>No hay horarios programados</h2><p>No hay horarios programados para esta fecha.</p>`;
       return;
     }
-    const link = isPlaceholder(entry.pdf) ? "" : `<button class="schedule-open-button" type="button" data-pdf="${entry.pdf}" data-pdf-title="${entry.title || "Horario del día"}" data-pdf-back="schedule">Ver horario<span>›</span></button>`;
-    const note = isPlaceholder(entry.pdf) ? `<p class="placeholder-note">Falta configurar el enlace al PDF en <code>config.js</code>.</p>` : "";
-    card.innerHTML = `<p class="schedule-date">${label}</p><h2>${entry.title || "Horario"}</h2><p>${entry.note || ""}</p>${link}${note}`;
+    const link = isPlaceholder(entry.pdf) ? "" : `<button class="schedule-open-button" type="button" data-pdf="${entry.pdf}" data-pdf-title="${entry.title || "Horario del día"}" data-pdf-back="schedule" data-pdf-theme="schedule">Ver horario<span>›</span></button>`;
+    const note = entry.note ? `<p>${entry.note}</p>` : "";
+    card.innerHTML = `<p class="schedule-date">${label}</p><h2>${entry.title || "Horario"}</h2>${note}${link}`;
   }
 
-  async function openDocument(pdf, title, backTarget = "dashboard") {
+  async function openDocument(pdf, title, backTarget = "dashboard", theme = "schedule") {
+    currentPdf = { pdf, title, backTarget, theme };
+    pdfZoom = 1;
+    return renderDocument();
+  }
+
+  async function renderDocument() {
+    if (!currentPdf) return;
+    const { pdf, title, backTarget, theme } = currentPdf;
     $("#document-title").textContent = title;
     $("#document-screen [data-back]").dataset.back = backTarget;
+    $("#document-screen").dataset.theme = theme;
     showScreen("document");
     const viewer = $("#document-viewer");
     viewer.replaceChildren();
@@ -78,14 +97,14 @@
       if (!window.pdfjsLib) throw new Error("PDF.js no disponible");
       window.pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
       currentPdfTask?.destroy();
-      currentPdfTask = window.pdfjsLib.getDocument(pdf);
+      currentPdfTask = window.pdfjsLib.getDocument(encodeURI(pdf));
       const documentPdf = await currentPdfTask.promise;
       viewer.replaceChildren();
       for (let pageNumber = 1; pageNumber <= documentPdf.numPages; pageNumber += 1) {
         const page = await documentPdf.getPage(pageNumber);
         const baseViewport = page.getViewport({ scale: 1 });
-        // Cada página ocupa el 100% del ancho útil del visor.
-        const viewport = page.getViewport({ scale: (viewer.clientWidth - 28) / baseViewport.width });
+        // Cada página ocupa el ancho útil del visor y el usuario puede ampliar o reducir.
+        const viewport = page.getViewport({ scale: ((viewer.clientWidth - 28) / baseViewport.width) * pdfZoom });
         const pageWrap = document.createElement("div");
         pageWrap.className = "pdf-page";
         const canvas = document.createElement("canvas");
@@ -98,7 +117,12 @@
         await page.render({ canvasContext: canvas.getContext("2d"), viewport, transform: [devicePixelRatio, 0, 0, devicePixelRatio, 0, 0] }).promise;
       }
     } catch (_) {
-      viewer.textContent = "No se ha podido abrir este PDF. Comprueba que el archivo está dentro de la carpeta pdfs.";
+      viewer.replaceChildren();
+      const fallback = document.createElement("iframe");
+      fallback.className = "pdf-fallback";
+      fallback.src = encodeURI(pdf);
+      fallback.title = title;
+      viewer.append(fallback);
     }
   }
 
@@ -107,10 +131,11 @@
     const items = cfg.collections[key] || [];
     $("#collection-title").textContent = titles[key];
     $("#collection-list").innerHTML = items.map((item) => {
-      if (item.items) return `<details class="collection-disclosure"><summary>${item.title}<span>›</span></summary><div class="collection-sublist">${item.items.map((child) => `<button class="collection-subbutton" type="button" data-pdf="${child.pdf}" data-pdf-title="${child.title}" data-pdf-back="collection">${child.title}<span>›</span></button>`).join("")}</div></details>`;
-      if (item.pdf) return `<button class="collection-button" type="button" data-pdf="${item.pdf}" data-pdf-title="${item.title}" data-pdf-back="collection">${item.title}<span>›</span></button>`;
+      if (item.items) return `<details class="collection-disclosure"><summary><span class="disclosure-title">${item.title}<small>Selecciona una versión</small></span><span class="disclosure-chevron">›</span></summary><div class="collection-sublist">${item.items.map((child) => `<button class="collection-subbutton" type="button" data-pdf="${child.pdf}" data-pdf-title="${child.title}" data-pdf-back="collection" data-pdf-theme="${key}">${child.title}<span>›</span></button>`).join("")}</div></details>`;
+      if (item.pdf) return `<button class="collection-button" type="button" data-pdf="${item.pdf}" data-pdf-title="${item.title}" data-pdf-back="collection" data-pdf-theme="${key}">${item.title}<span>›</span></button>`;
       return `<button class="collection-button" type="button" disabled>${item.title}<small>Próximamente</small></button>`;
     }).join("");
+    $("#collection-screen").dataset.theme = key;
     showScreen("collection");
   }
 
@@ -159,19 +184,38 @@
   setInterval(updateClock, 30_000);
   $("#nfc-button").addEventListener("click", startNfc);
   $("#camera-button").addEventListener("click", startScanner);
-  $("#manual-button").addEventListener("click", () => { $("#manual-code").value = ""; setStatus($("#manual-status"), ""); $("#manual-dialog").showModal(); setTimeout(() => $("#manual-code").focus(), 100); });
-  $("#submit-code").addEventListener("click", (event) => { event.preventDefault(); validate($("#manual-code").value, $("#manual-status")); });
-  $("#manual-code").addEventListener("keydown", (event) => { if (event.key === "Enter") { event.preventDefault(); validate(event.target.value, $("#manual-status")); } });
+  $("#manual-button").addEventListener("click", () => { $("#manual-username").value = ""; $("#manual-code").value = ""; setStatus($("#manual-status"), ""); $("#manual-dialog").showModal(); setTimeout(() => $("#manual-username").focus(), 100); });
+  $("#submit-code").addEventListener("click", (event) => { event.preventDefault(); validate($("#manual-code").value, $("#manual-status"), $("#manual-username").value); });
+  $("#manual-code").addEventListener("keydown", (event) => { if (event.key === "Enter") { event.preventDefault(); validate(event.target.value, $("#manual-status"), $("#manual-username").value); } });
   $("#stop-camera").addEventListener("click", stopScanner);
   $("#scanner-dialog").addEventListener("close", stopScanner);
   $("#logout-button").addEventListener("click", () => { sessionStorage.removeItem("controlAccessSession"); showScreen("access"); const status = $("#access-status"); setStatus(status, "Sesión cerrada"); setTimeout(() => { if (status.textContent === "Sesión cerrada") setStatus(status, ""); }, 10_000); });
   document.querySelectorAll("[data-section]").forEach((button) => button.addEventListener("click", () => { if (button.dataset.section === "schedule") { renderSchedule(); showScreen("schedule"); } }));
   document.querySelectorAll("[data-collection]").forEach((button) => button.addEventListener("click", () => showCollection(button.dataset.collection)));
   document.querySelectorAll("[data-external]").forEach((button) => button.addEventListener("click", () => openExternal(button.dataset.external)));
-  document.addEventListener("click", (event) => { const button = event.target.closest("[data-pdf]"); if (button) openDocument(button.dataset.pdf, button.dataset.pdfTitle, button.dataset.pdfBack); });
+  document.addEventListener("click", (event) => { const button = event.target.closest("[data-pdf]"); if (button) openDocument(button.dataset.pdf, button.dataset.pdfTitle, button.dataset.pdfBack, button.dataset.pdfTheme); });
   document.querySelectorAll("[data-back]").forEach((button) => button.addEventListener("click", () => showScreen(button.dataset.back)));
   $("#previous-day").addEventListener("click", () => { selectedDate.setDate(selectedDate.getDate() - 1); renderSchedule(); });
   $("#next-day").addEventListener("click", () => { selectedDate.setDate(selectedDate.getDate() + 1); renderSchedule(); });
   $("#today-button").addEventListener("click", () => { selectedDate = new Date(date); renderSchedule(); });
+  const pinchDistance = (touches) => Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY);
+  const viewer = $("#document-viewer");
+  viewer.addEventListener("touchstart", (event) => {
+    if (event.touches.length === 2 && currentPdf) { pinchStartDistance = pinchDistance(event.touches); pinchStartZoom = pdfZoom; }
+  }, { passive: true });
+  viewer.addEventListener("touchmove", (event) => {
+    if (event.touches.length !== 2 || !pinchStartDistance || !currentPdf) return;
+    event.preventDefault();
+    const previewZoom = Math.min(2.5, Math.max(0.5, pinchStartZoom * (pinchDistance(event.touches) / pinchStartDistance)));
+    viewer.style.setProperty("--pinch-preview", previewZoom / pdfZoom);
+  }, { passive: false });
+  viewer.addEventListener("touchend", (event) => {
+    if (event.touches.length || !pinchStartDistance || !currentPdf) return;
+    const previewZoom = Number(viewer.style.getPropertyValue("--pinch-preview")) || 1;
+    pdfZoom = Math.min(2.5, Math.max(0.5, pdfZoom * previewZoom));
+    pinchStartDistance = 0;
+    viewer.style.removeProperty("--pinch-preview");
+    renderDocument();
+  });
   if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("sw.js"));
 })();
