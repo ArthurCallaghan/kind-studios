@@ -1,4 +1,4 @@
-const CACHE = "kind-studios-v40";
+const CACHE = "kind-studios-v41";
 const ASSETS = ["./", "./index.html", "./style.css", "./style-overrides.css", "./app.js", "./config.js", "./manifest.webmanifest", "./icon.svg"];
 self.addEventListener("install", (event) => event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(ASSETS))));
 self.addEventListener("activate", (event) => event.waitUntil(self.clients.claim()));

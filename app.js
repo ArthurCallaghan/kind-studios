@@ -6,6 +6,7 @@
   const date = new Date(); date.setHours(0, 0, 0, 0);
   let selectedDate = new Date(date);
   let scanner = null;
+  let activeCamera = "user";
   let currentPdfTask = null;
   let currentPdf = null;
   let pdfZoom = 1;
@@ -165,17 +166,19 @@
     } catch (error) { setStatus(status, "No se pudo leer NFC. Prueba otra forma de acceso.", "error"); }
   }
 
-  async function startScanner() {
+  async function startScanner(camera = activeCamera) {
     const dialog = $("#scanner-dialog"), status = $("#scanner-status");
-    dialog.showModal();
+    activeCamera = camera;
+    if (!dialog.open) dialog.showModal();
     if (!window.Html5Qrcode) { setStatus(status, "No se ha podido cargar el escáner. Comprueba tu conexión.", "error"); return; }
     try {
       scanner = new Html5Qrcode("reader");
-      await scanner.start({ facingMode: "user" }, { fps: 10, qrbox: { width: 260, height: 150 }, formatsToSupport: [Html5QrcodeSupportedFormats.CODE_128, Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.EAN_8] }, (code) => validate(code, status));
-      setStatus(status, "Usa la cámara frontal para enfocar el código de barras.");
+      await scanner.start({ facingMode: activeCamera }, { fps: 10, qrbox: { width: 260, height: 150 }, formatsToSupport: [Html5QrcodeSupportedFormats.CODE_128, Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.EAN_8] }, (code) => validate(code, status));
+      setStatus(status, activeCamera === "user" ? "Usa la cámara frontal para enfocar el código de barras." : "Usa la cámara trasera para enfocar el código de barras.");
     } catch (_) { setStatus(status, "No se pudo abrir la cámara. Acepta el permiso y prueba de nuevo.", "error"); }
   }
   async function stopScanner() { if (scanner) { try { await scanner.stop(); } catch (_) {} scanner.clear(); scanner = null; } }
+  async function switchCamera() { await stopScanner(); await startScanner(activeCamera === "user" ? "environment" : "user"); }
 
   $("#brand-name").textContent = cfg.appName;
   // Una recarga exige identificarse de nuevo.
@@ -188,6 +191,7 @@
   $("#submit-code").addEventListener("click", (event) => { event.preventDefault(); validate($("#manual-code").value, $("#manual-status"), $("#manual-username").value); });
   $("#manual-code").addEventListener("keydown", (event) => { if (event.key === "Enter") { event.preventDefault(); validate(event.target.value, $("#manual-status"), $("#manual-username").value); } });
   $("#stop-camera").addEventListener("click", stopScanner);
+  $("#switch-camera").addEventListener("click", switchCamera);
   $("#scanner-dialog").addEventListener("close", stopScanner);
   $("#logout-button").addEventListener("click", () => { sessionStorage.removeItem("controlAccessSession"); showScreen("access"); const status = $("#access-status"); setStatus(status, "Sesión cerrada"); setTimeout(() => { if (status.textContent === "Sesión cerrada") setStatus(status, ""); }, 10_000); });
   document.querySelectorAll("[data-section]").forEach((button) => button.addEventListener("click", () => { if (button.dataset.section === "schedule") { renderSchedule(); showScreen("schedule"); } }));
