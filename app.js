@@ -7,6 +7,7 @@
   let selectedDate = new Date(date);
   let scanner = null;
   let nfcController = null;
+  // En móvil se abre primero la cámara frontal; en ordenador, la webcam habitual.
   let activeCamera = "user";
   let currentPdfTask = null;
   let currentPdf = null;
@@ -187,7 +188,7 @@
   }
   function stopNfc() { if (nfcController) { nfcController.abort(); nfcController = null; } }
 
-  // La cámara frontal es la predeterminada en móviles; en ordenador el navegador elegirá la webcam habitual.
+  // El navegador abre la webcam/frontal predeterminada; el botón permite cambiar de cámara.
   async function startScanner(camera = activeCamera) {
     const dialog = $("#scanner-dialog"), status = $("#scanner-status");
     activeCamera = camera;
@@ -217,7 +218,8 @@
   updateClock();
   setInterval(updateClock, 30_000);
   $("#nfc-button").addEventListener("click", startNfc);
-  $("#camera-button").addEventListener("click", startScanner);
+  // No pasar el evento del clic a startScanner: se interpretaría erróneamente como una cámara.
+  $("#camera-button").addEventListener("click", () => startScanner());
   $("#manual-button").addEventListener("click", () => { $("#manual-username").value = ""; $("#manual-code").value = ""; setStatus($("#manual-status"), ""); $("#manual-dialog").showModal(); setTimeout(() => $("#manual-username").focus(), 100); });
   $("#submit-code").addEventListener("click", (event) => { event.preventDefault(); validate($("#manual-code").value, $("#manual-status"), $("#manual-username").value, "credentials"); });
   $("#manual-code").addEventListener("keydown", (event) => { if (event.key === "Enter") { event.preventDefault(); validate(event.target.value, $("#manual-status"), $("#manual-username").value, "credentials"); } });
