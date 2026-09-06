@@ -6,6 +6,7 @@
   const date = new Date(); date.setHours(0, 0, 0, 0);
   let selectedDate = new Date(date);
   let scanner = null;
+  let nfcController = null;
   let activeCamera = "user";
   let currentPdfTask = null;
   let currentPdf = null;
@@ -39,7 +40,9 @@
     updateDashboard(user.profile || "admin");
     $("#manual-dialog").close();
     $("#scanner-dialog").close();
+    if ($("#nfc-dialog").open) $("#nfc-dialog").close();
     stopScanner();
+    stopNfc();
     showScreen("dashboard");
     return true;
   }
@@ -53,11 +56,26 @@
     });
   }
 
-  function validate(code, statusElement, username = null) {
+  function validate(code, statusElement, username = null, method = "credentials") {
+    const normalizedCode = String(code || "").trim();
+    const normalizedUsername = username === null ? null : String(username).trim();
+    if (method === "credentials" && !normalizedCode) {
+      setStatus(statusElement, "Introduce tu clave de acceso.", "error");
+      return;
+    }
     const user = findUser(code);
-    const usernameMatches = username === null || (user && String(user.username || "").trim().toLowerCase() === String(username).trim().toLowerCase());
+    if (method === "credentials" && user?.username && !normalizedUsername) {
+      setStatus(statusElement, "Introduce tu usuario.", "error");
+      return;
+    }
+    const usernameMatches = username === null || (user && String(user.username || "").trim().toLowerCase() === String(normalizedUsername).toLowerCase());
     if (user && usernameMatches && login(code)) { setStatus(statusElement, "Acceso concedido.", "success"); return; }
-    setStatus(statusElement, username === null ? "Código no válido. Inténtalo de nuevo." : "Usuario o clave no válidos. Inténtalo de nuevo.", "error");
+    const messages = {
+      barcode: "Código de barras no reconocido.",
+      nfc: "Tarjeta no reconocida.",
+      credentials: "Usuario o clave de acceso incorrectos."
+    };
+    setStatus(statusElement, messages[method] || "Acceso incorrecto.", "error");
   }
 
   function renderSchedule() {
@@ -147,7 +165,8 @@
   }
 
   async function startNfc() {
-    const status = $("#access-status");
+    const dialog = $("#nfc-dialog"), status = $("#nfc-status");
+    if (!dialog.open) dialog.showModal();
     if (!("NDEFReader" in window)) {
       const isiPhone = /iPad|iPhone|iPod/.test(navigator.userAgent);
       setStatus(status, isiPhone ? "El iPhone tiene NFC, pero Safari y las apps web no permiten leer tarjetas NFC. Usa el código de barras o la clave." : "NFC no está disponible en este navegador. Puedes usar la cámara o la clave.", "error");
@@ -155,16 +174,18 @@
     }
     try {
       setStatus(status, "Acerca la tarjeta al teléfono…");
+      nfcController = new AbortController();
       const reader = new NDEFReader();
-      await reader.scan();
+      await reader.scan({ signal: nfcController.signal });
       reader.addEventListener("reading", ({ serialNumber, message }) => {
         const record = message.records[0];
         let code = serialNumber;
         if (record?.data) { try { code = new TextDecoder(record.encoding || "utf-8").decode(record.data); } catch (_) {} }
-        validate(code, status);
+        validate(code, status, null, "nfc");
       }, { once: true });
-    } catch (error) { setStatus(status, "No se pudo leer NFC. Prueba otra forma de acceso.", "error"); }
+    } catch (error) { if (error.name !== "AbortError") setStatus(status, "No se pudo leer la tarjeta. Prueba otra forma de acceso.", "error"); }
   }
+  function stopNfc() { if (nfcController) { nfcController.abort(); nfcController = null; } }
 
   async function startScanner(camera = activeCamera) {
     const dialog = $("#scanner-dialog"), status = $("#scanner-status");
@@ -173,7 +194,7 @@
     if (!window.Html5Qrcode) { setStatus(status, "No se ha podido cargar el escáner. Comprueba tu conexión.", "error"); return; }
     try {
       scanner = new Html5Qrcode("reader");
-      await scanner.start({ facingMode: activeCamera }, { fps: 10, qrbox: { width: 260, height: 150 }, formatsToSupport: [Html5QrcodeSupportedFormats.CODE_128, Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.EAN_8] }, (code) => validate(code, status));
+      await scanner.start({ facingMode: activeCamera }, { fps: 10, qrbox: { width: 260, height: 150 }, formatsToSupport: [Html5QrcodeSupportedFormats.CODE_128, Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.EAN_8] }, (code) => validate(code, status, null, "barcode"));
       setStatus(status, activeCamera === "user" ? "Usa la cámara frontal para enfocar el código de barras." : "Usa la cámara trasera para enfocar el código de barras.");
     } catch (_) { setStatus(status, "No se pudo abrir la cámara. Acepta el permiso y prueba de nuevo.", "error"); }
   }
@@ -188,11 +209,13 @@
   $("#nfc-button").addEventListener("click", startNfc);
   $("#camera-button").addEventListener("click", startScanner);
   $("#manual-button").addEventListener("click", () => { $("#manual-username").value = ""; $("#manual-code").value = ""; setStatus($("#manual-status"), ""); $("#manual-dialog").showModal(); setTimeout(() => $("#manual-username").focus(), 100); });
-  $("#submit-code").addEventListener("click", (event) => { event.preventDefault(); validate($("#manual-code").value, $("#manual-status"), $("#manual-username").value); });
-  $("#manual-code").addEventListener("keydown", (event) => { if (event.key === "Enter") { event.preventDefault(); validate(event.target.value, $("#manual-status"), $("#manual-username").value); } });
+  $("#submit-code").addEventListener("click", (event) => { event.preventDefault(); validate($("#manual-code").value, $("#manual-status"), $("#manual-username").value, "credentials"); });
+  $("#manual-code").addEventListener("keydown", (event) => { if (event.key === "Enter") { event.preventDefault(); validate(event.target.value, $("#manual-status"), $("#manual-username").value, "credentials"); } });
   $("#stop-camera").addEventListener("click", stopScanner);
   $("#switch-camera").addEventListener("click", switchCamera);
   $("#scanner-dialog").addEventListener("close", stopScanner);
+  $("#stop-nfc").addEventListener("click", stopNfc);
+  $("#nfc-dialog").addEventListener("close", stopNfc);
   $("#logout-button").addEventListener("click", () => { sessionStorage.removeItem("controlAccessSession"); showScreen("access"); const status = $("#access-status"); setStatus(status, "Sesión cerrada"); setTimeout(() => { if (status.textContent === "Sesión cerrada") setStatus(status, ""); }, 10_000); });
   document.querySelectorAll("[data-section]").forEach((button) => button.addEventListener("click", () => { if (button.dataset.section === "schedule") { renderSchedule(); showScreen("schedule"); } }));
   document.querySelectorAll("[data-collection]").forEach((button) => button.addEventListener("click", () => showCollection(button.dataset.collection)));
@@ -221,5 +244,5 @@
     viewer.style.removeProperty("--pinch-preview");
     renderDocument();
   });
-  if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("sw.js"));
+  if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("sw.js?v=20260906-2", { updateViaCache: "none" }));
 })();
