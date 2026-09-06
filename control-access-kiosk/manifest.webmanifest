@@ -1,9 +1,0 @@
-{
-  "name": "Kind Studios",
-  "short_name": "Kind Studios",
-  "start_url": "./index.html",
-  "display": "standalone",
-  "background_color": "#f5f7fb",
-  "theme_color": "#14213d",
-  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
-}
