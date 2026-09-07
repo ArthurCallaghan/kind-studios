@@ -4,7 +4,7 @@
     { "id": "pau-admin", "code": "07032025", "username": "pauescobedo", "name": "Pau", "role": "Administrador", "profile": "admin" },
     { "id": "pau", "code": "KS-5831-QF27", "username": "", "name": "Pau", "role": "Administrador", "profile": "admin" },
     { "id": "mariona", "code": "KS-2047-LX63", "username": "", "name": "Mariona", "role": "Staff", "profile": "staff" },
-    { "id": "fermito", "code": "KS-7194-RB05", "username": "", "name": "Fermito", "role": "Staff", "profile": "staff" },
+    { "id": "fermito", "code": "KS-7194-RB05", "username": "", "name": "Pau Fermosel", "role": "Staff", "profile": "staff" },
     { "id": "carles", "code": "KS-3618-NK42", "username": "", "name": "Carles", "role": "Member", "profile": "member" },
     { "id": "amanda", "code": "KS-9452-WJ18", "username": "", "name": "Amanda", "role": "Member", "profile": "member" },
     { "id": "invitado", "code": "KS-6270-TP91", "username": "", "name": "Invitado", "role": "Guest", "profile": "guestStandard" },
