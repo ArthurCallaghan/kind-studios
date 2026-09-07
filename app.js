@@ -7,6 +7,10 @@
   let selectedDate = new Date(date);
   let selectedChecklistKey = null;
   let archivedChecklistStatus = null;
+  let studioCalendar = null;
+  let users = [];
+  let usersReady = false;
+  let currentUser = null;
   let scanner = null;
   let nfcController = null;
   // En móvil se abre primero la cámara frontal; en ordenador, la webcam habitual.
@@ -16,6 +20,7 @@
   let pdfZoom = 1;
   let pinchStartDistance = 0;
   let pinchStartZoom = 1;
+  let pinchPreviewZoom = 1;
 
   // No usar toISOString(): cerca de medianoche puede restar un día por usar UTC.
   const formatKey = (value) => `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}-${String(value.getDate()).padStart(2, "0")}`;
@@ -28,14 +33,109 @@
     while (cursor <= last) { result.push(formatKey(cursor)); cursor.setDate(cursor.getDate() + 7); }
     return result;
   };
-  const checklistKeys = buildFridayKeys(cfg.checklistRange?.start || scheduleStart, cfg.checklistRange?.end || scheduleEnd);
+  let checklistKeys = buildFridayKeys(cfg.checklistRange?.start || scheduleStart, cfg.checklistRange?.end || scheduleEnd);
   if (formatKey(selectedDate) < scheduleStart) selectedDate = dateFromKey(scheduleStart);
   if (formatKey(selectedDate) > scheduleEnd) selectedDate = dateFromKey(scheduleEnd);
   selectedChecklistKey = checklistKeys.find((key) => key >= formatKey(date)) || checklistKeys.at(-1) || null;
   const isPlaceholder = (url) => !url || /REEMPLAZA/i.test(url);
   const setStatus = (element, message, type = "") => { element.textContent = message; element.className = `status ${type}`; };
   const showScreen = (id) => { screens.forEach((screen) => screen.classList.toggle("active", screen.id === `${id}-screen`)); window.scrollTo(0, 0); };
-  const findUser = (code) => cfg.users.find((user) => String(user.code).trim().toLowerCase() === String(code).trim().toLowerCase());
+  const findUser = (code) => users.find((user) => String(user.code).trim().toLowerCase() === String(code).trim().toLowerCase());
+
+  async function loadUsers() {
+    try {
+      const response = await fetch("users.json", { cache: "no-store" });
+      if (!response.ok) throw new Error("No disponible");
+      const data = await response.json();
+      users = Array.isArray(data.users) ? data.users : [];
+    } catch (_) {
+      users = [];
+    } finally {
+      usersReady = true;
+    }
+  }
+
+  async function loadPdfConfig() {
+    try {
+      const response = await fetch("pdf-config.json", { cache: "no-store" });
+      if (!response.ok) throw new Error("No disponible");
+      const data = await response.json();
+      cfg.schedules = data.schedules || {};
+      cfg.collections = data.collections || {};
+      cfg.externalLinks = data.externalLinks || {};
+      if ($("#schedule-screen").classList.contains("active")) renderSchedule();
+      if ($("#collection-screen").classList.contains("active")) showCollection($("#collection-screen").dataset.collectionKey || "");
+    } catch (_) {
+      // Sin conexión se muestran los estados vacíos, sin bloquear la app.
+      cfg.schedules ||= {};
+      cfg.collections ||= {};
+      cfg.externalLinks ||= {};
+    }
+  }
+
+  const isTeachingDate = (key, calendar = studioCalendar) => {
+    if (!calendar) return true;
+    const inPeriod = (calendar.teachingPeriods || []).some((period) => key >= period.start && key <= period.end);
+    return inPeriod && !(calendar.closedDates || []).includes(key);
+  };
+
+  function updateChecklistKeys() {
+    checklistKeys = buildFridayKeys(cfg.checklistRange?.start || scheduleStart, cfg.checklistRange?.end || scheduleEnd).filter((key) => isTeachingDate(key));
+    if (!checklistKeys.includes(selectedChecklistKey)) selectedChecklistKey = checklistKeys.find((key) => key >= formatKey(date)) || checklistKeys.at(-1) || null;
+  }
+
+  async function loadStudioCalendar() {
+    try {
+      const response = await fetch("studio-calendar.json", { cache: "no-store" });
+      if (!response.ok) return;
+      studioCalendar = await response.json();
+      updateChecklistKeys();
+      updateStudioStatus();
+      if ($("#checklist-screen").classList.contains("active")) renderChecklist();
+    } catch (_) {
+      // Sin conexión, se mantiene el rango básico de la aplicación.
+    }
+  }
+
+  const minutesFromTime = (value) => { const [hour, minute] = value.split(":").map(Number); return hour * 60 + minute; };
+
+  function nextStudioOpening(now, calendar) {
+    const candidate = new Date(now); candidate.setHours(0, 0, 0, 0);
+    for (let offset = 0; offset <= 380; offset += 1) {
+      if (offset) candidate.setDate(candidate.getDate() + 1);
+      const key = formatKey(candidate);
+      if (candidate.getDay() !== 5 || !isTeachingDate(key, calendar)) continue;
+      const reduced = (calendar.reducedDates || []).includes(key);
+      const opening = reduced ? calendar.reducedHours.start : calendar.regularHours.preOpenStart;
+      if (offset || now.getHours() * 60 + now.getMinutes() < minutesFromTime(opening)) return { key, opening };
+    }
+    return null;
+  }
+
+  function updateStudioStatus(now = new Date()) {
+    const status = $("#studio-status");
+    if (!status) return;
+    const key = formatKey(now), calendar = studioCalendar;
+    let state = "closed", message = "Estudio cerrado", detail = "";
+    if (calendar && now.getDay() === 5 && isTeachingDate(key, calendar)) {
+      const minute = now.getHours() * 60 + now.getMinutes();
+      if ((calendar.reducedDates || []).includes(key)) {
+        const reduced = calendar.reducedHours;
+        if (minute >= minutesFromTime(reduced.start) && minute < minutesFromTime(reduced.end)) { state = "reduced"; message = "Horario reducido"; detail = `${reduced.start} – ${reduced.end}`; }
+      } else {
+        const hours = calendar.regularHours;
+        if (minute >= minutesFromTime(hours.openStart) && minute < minutesFromTime(hours.openEnd)) { state = "open"; message = "Estudio abierto"; detail = `Horario actual · ${hours.openStart} – ${hours.openEnd}`; }
+        else if (minute >= minutesFromTime(hours.preOpenStart) && minute < minutesFromTime(hours.openStart)) { state = "soon"; message = "A punto de abrir"; detail = `Abre a las ${hours.openStart}`; }
+        else if (minute >= minutesFromTime(hours.openEnd) && minute < minutesFromTime(hours.closeEnd)) { state = "soon"; message = "A punto de cerrar"; detail = `Cierra a las ${hours.closeEnd}`; }
+      }
+    }
+    if (state === "closed" && calendar) {
+      const next = nextStudioOpening(now, calendar);
+      if (next) detail = `Próxima apertura: ${formatDateLabel(dateFromKey(next.key))} · ${next.opening}`;
+    }
+    status.dataset.state = state;
+    status.innerHTML = `<span class="studio-light" aria-hidden="true"></span><span><strong>${message}</strong>${detail ? `<small>${detail}</small>` : ""}</span>`;
+  }
 
   async function loadArchivedChecklistStatus() {
     try {
@@ -56,11 +156,13 @@
     const time = new Intl.DateTimeFormat("es-ES", { hour: "2-digit", minute: "2-digit" }).format(now);
     const titledDay = `${day.charAt(0).toUpperCase()}${day.slice(1)}`;
     $("#current-date-time").textContent = `${titledDay} · ${time}`;
+    updateStudioStatus(now);
   }
 
   function login(code) {
     const user = findUser(code);
     if (!user) return false;
+    currentUser = user;
     const expires = Date.now() + cfg.sessionMinutes * 60 * 1000;
     sessionStorage.setItem("controlAccessSession", JSON.stringify({ user, expires }));
     $("#greeting").textContent = user.profile === "guestStandard" ? "¡Hola!" : `¡Hola, ${user.name}!`;
@@ -84,6 +186,7 @@
   }
 
   function validate(code, statusElement, username = null, method = "credentials") {
+    if (!usersReady) { setStatus(statusElement, "Cargando usuarios…", ""); return; }
     const normalizedCode = String(code || "").trim();
     const normalizedUsername = username === null ? null : String(username).trim();
     if (method === "credentials" && !normalizedCode) {
@@ -115,7 +218,7 @@
 
   function renderSchedule() {
     const key = formatKey(selectedDate);
-    const entry = cfg.schedules[key];
+    const entry = cfg.schedules?.[key];
     const label = formatDateLabel(selectedDate);
     const card = $("#schedule-card");
     $("#today-button").classList.toggle("active", key === formatKey(date));
@@ -140,9 +243,6 @@
     const entry = cfg.checklists?.[selectedChecklistKey] || {};
     const referenceKey = checklistKeys.find((key) => key >= formatKey(date)) || checklistKeys.at(-1);
     $("#checklist-today-button").classList.toggle("active", selectedChecklistKey === referenceKey);
-    const checklistIndex = checklistKeys.indexOf(selectedChecklistKey);
-    $("#previous-checklist").disabled = checklistIndex <= 0;
-    $("#next-checklist").disabled = checklistIndex >= checklistKeys.length - 1;
     const groupKeys = entry.groups || ["teatroGroup3", "teatroGroup4"];
     const groups = cfg.checklistGroups || {};
     card.innerHTML = `<p class="schedule-date">${formatDateLabel(selected)}</p><h2>Checklist de alumno/as</h2><div class="checklist-groups">${groupKeys.map((key) => {
@@ -170,7 +270,7 @@
     renderSchedule();
   }
 
-  function checklistStorageKey(groupKey) { return `kind-studios-checklist-${selectedChecklistKey}-${groupKey}`; }
+  function checklistStorageKey(groupKey, key = selectedChecklistKey) { return `kind-studios-checklist-${key}-${groupKey}`; }
 
   function getChecklistState(groupKey, students, archived) {
     const checkedStudents = archived && archivedChecklistStatus?.dates?.[selectedChecklistKey]?.[groupKey]?.checkedStudents;
@@ -185,6 +285,47 @@
     const state = {};
     document.querySelectorAll(`[data-checklist-student][data-checklist-group="${groupKey}"]`).forEach((input) => { state[input.dataset.checklistStudent] = input.checked; });
     localStorage.setItem(checklistStorageKey(groupKey), JSON.stringify(state));
+  }
+
+  const checkinStorageKey = (userId, key) => `kind-studios-checkin-${key}-${userId}`;
+
+  function isViceGroupDay(key) {
+    return isTeachingDate(key) && Boolean(cfg.checklists?.[key]?.groups?.includes("viceGroup"));
+  }
+
+  function openCheckinDialog() {
+    const dialog = $("#checkin-dialog"), key = formatKey(new Date()), title = $("#checkin-dialog h2"), text = $("#checkin-dialog-text"), confirm = $("#confirm-checkin");
+    if (!currentUser || currentUser.profile !== "viceMember") return;
+    if (!isViceGroupDay(key)) {
+      title.textContent = "Hoy no hay ensayo";
+      text.textContent = "El Check In estará disponible el próximo viernes con Vice Group.";
+      confirm.hidden = true;
+      confirm.disabled = true;
+    } else {
+      const checkin = localStorage.getItem(checkinStorageKey(currentUser.id, key));
+      title.textContent = checkin ? "Check In completado" : "¿Confirmar Check In?";
+      text.textContent = checkin ? `Tu asistencia se confirmó a las ${checkin}.` : "Confirma tu llegada al ensayo de Vice Group.";
+      confirm.hidden = Boolean(checkin);
+      confirm.disabled = Boolean(checkin);
+    }
+    dialog.showModal();
+  }
+
+  function confirmCheckin() {
+    if (!currentUser || !isViceGroupDay(formatKey(new Date()))) return;
+    const key = formatKey(new Date());
+    const time = new Intl.DateTimeFormat("es-ES", { hour: "2-digit", minute: "2-digit" }).format(new Date());
+    localStorage.setItem(checkinStorageKey(currentUser.id, key), time);
+    const students = cfg.checklistGroups?.viceGroup?.students || [];
+    const studentIndex = students.indexOf(currentUser.name);
+    if (studentIndex >= 0) {
+      let state = {};
+      try { state = JSON.parse(localStorage.getItem(checklistStorageKey("viceGroup", key)) || "{}"); } catch (_) {}
+      state[studentIndex] = true;
+      localStorage.setItem(checklistStorageKey("viceGroup", key), JSON.stringify(state));
+    }
+    $("#checkin-dialog").close();
+    if ($("#checklist-screen").classList.contains("active")) renderChecklist();
   }
 
   async function openDocument(pdf, title, backTarget = "dashboard", theme = "schedule") {
@@ -213,8 +354,8 @@
       for (let pageNumber = 1; pageNumber <= documentPdf.numPages; pageNumber += 1) {
         const page = await documentPdf.getPage(pageNumber);
         const baseViewport = page.getViewport({ scale: 1 });
-        // Cada página ocupa el ancho útil del visor y el usuario puede ampliar o reducir.
-        const viewport = page.getViewport({ scale: ((viewer.clientWidth - 28) / baseViewport.width) * pdfZoom });
+        // Renderizado único al tamaño base: el zoom posterior es visual y no vuelve a cargar el PDF.
+        const viewport = page.getViewport({ scale: (viewer.clientWidth - 28) / baseViewport.width });
         const pageWrap = document.createElement("div");
         pageWrap.className = "pdf-page";
         const canvas = document.createElement("canvas");
@@ -224,6 +365,8 @@
         canvas.style.height = `${Math.ceil(viewport.height)}px`;
         pageWrap.append(canvas);
         viewer.append(pageWrap);
+        pageWrap.dataset.baseWidth = String(Math.ceil(viewport.width));
+        pageWrap.dataset.baseHeight = String(Math.ceil(viewport.height));
         await page.render({ canvasContext: canvas.getContext("2d"), viewport, transform: [devicePixelRatio, 0, 0, devicePixelRatio, 0, 0] }).promise;
       }
     } catch (_) {
@@ -236,9 +379,20 @@
     }
   }
 
+  function applyPdfZoom(zoom) {
+    document.querySelectorAll("#document-viewer .pdf-page").forEach((page) => {
+      const width = Number(page.dataset.baseWidth), height = Number(page.dataset.baseHeight);
+      if (!width || !height) return;
+      page.style.width = `${Math.round(width * zoom)}px`;
+      page.style.height = `${Math.round(height * zoom)}px`;
+      const canvas = page.querySelector("canvas");
+      if (canvas) { canvas.style.width = "100%"; canvas.style.height = "100%"; }
+    });
+  }
+
   function showCollection(key) {
     const titles = { threeOfAKind: "Three of a Kind", teatroMusical: "Teatro Musical", viceGroup: "Vice Group" };
-    const items = cfg.collections[key] || [];
+    const items = cfg.collections?.[key] || [];
     $("#collection-title").textContent = titles[key];
     $("#collection-list").innerHTML = items.map((item) => {
       if (item.items) return `<details class="collection-disclosure"><summary><span class="disclosure-title">${item.title}<small>Selecciona una versión</small></span><span class="disclosure-chevron">›</span></summary><div class="collection-sublist">${item.items.map((child) => `<button class="collection-subbutton" type="button" data-pdf="${child.pdf}" data-pdf-title="${child.title}" data-pdf-back="collection" data-pdf-theme="${key}">${child.title}<span>›</span></button>`).join("")}</div></details>`;
@@ -246,6 +400,7 @@
       return `<button class="collection-button" type="button" disabled>${item.title}<small>Próximamente</small></button>`;
     }).join("");
     $("#collection-screen").dataset.theme = key;
+    $("#collection-screen").dataset.collectionKey = key;
     showScreen("collection");
   }
 
@@ -306,7 +461,10 @@
   // Una recarga exige identificarse de nuevo.
   sessionStorage.removeItem("controlAccessSession");
   updateClock();
+  loadUsers();
+  loadPdfConfig();
   loadArchivedChecklistStatus();
+  loadStudioCalendar();
   setInterval(updateClock, 30_000);
   $("#nfc-button").addEventListener("click", startNfc);
   // No pasar el evento del clic a startScanner: se interpretaría erróneamente como una cámara.
@@ -319,10 +477,12 @@
   $("#scanner-dialog").addEventListener("close", stopScanner);
   $("#stop-nfc").addEventListener("click", stopNfc);
   $("#nfc-dialog").addEventListener("close", stopNfc);
+  $("#confirm-checkin").addEventListener("click", (event) => { event.preventDefault(); confirmCheckin(); });
   $("#logout-button").addEventListener("click", () => { sessionStorage.removeItem("controlAccessSession"); showScreen("access"); const status = $("#access-status"); setStatus(status, "Sesión cerrada"); setTimeout(() => { if (status.textContent === "Sesión cerrada") setStatus(status, ""); }, 10_000); });
   document.querySelectorAll("[data-section]").forEach((button) => button.addEventListener("click", () => {
     if (button.dataset.section === "schedule") { renderSchedule(); showScreen("schedule"); }
     if (button.dataset.section === "checklist") { renderChecklist(); showScreen("checklist"); }
+    if (button.dataset.section === "checkin") openCheckinDialog();
   }));
   document.querySelectorAll("[data-collection]").forEach((button) => button.addEventListener("click", () => showCollection(button.dataset.collection)));
   document.querySelectorAll("[data-external]").forEach((button) => button.addEventListener("click", () => openExternal(button.dataset.external)));
@@ -342,21 +502,24 @@
   const pinchDistance = (touches) => Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY);
   const viewer = $("#document-viewer");
   viewer.addEventListener("touchstart", (event) => {
-    if (event.touches.length === 2 && currentPdf) { pinchStartDistance = pinchDistance(event.touches); pinchStartZoom = pdfZoom; }
+    if (event.touches.length === 2 && currentPdf) { pinchStartDistance = pinchDistance(event.touches); pinchStartZoom = pdfZoom; pinchPreviewZoom = pdfZoom; }
   }, { passive: true });
   viewer.addEventListener("touchmove", (event) => {
     if (event.touches.length !== 2 || !pinchStartDistance || !currentPdf) return;
     event.preventDefault();
     const previewZoom = Math.min(2.5, Math.max(0.5, pinchStartZoom * (pinchDistance(event.touches) / pinchStartDistance)));
-    viewer.style.setProperty("--pinch-preview", previewZoom / pdfZoom);
+    pinchPreviewZoom = previewZoom;
+    applyPdfZoom(previewZoom);
   }, { passive: false });
   viewer.addEventListener("touchend", (event) => {
     if (event.touches.length || !pinchStartDistance || !currentPdf) return;
-    const previewZoom = Number(viewer.style.getPropertyValue("--pinch-preview")) || 1;
-    pdfZoom = Math.min(2.5, Math.max(0.5, pdfZoom * previewZoom));
+    pdfZoom = pinchPreviewZoom;
     pinchStartDistance = 0;
-    viewer.style.removeProperty("--pinch-preview");
-    renderDocument();
+    applyPdfZoom(pdfZoom);
   });
+  document.addEventListener("touchmove", (event) => {
+    if (event.touches.length > 1 && !event.target.closest("#document-viewer")) event.preventDefault();
+  }, { passive: false });
+  document.addEventListener("gesturestart", (event) => event.preventDefault(), { passive: false });
   if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("sw.js?v=20260906-2", { updateViaCache: "none" }));
 })();

@@ -1,0 +1,12 @@
+{
+  "instructions": "Edita aquí los periodos lectivos, los cierres y los viernes de horario reducido. Las horas se usan para el estado del estudio en el dashboard.",
+  "teachingPeriods": [
+    { "start": "2026-09-04", "end": "2026-12-18" },
+    { "start": "2027-01-08", "end": "2027-03-19" },
+    { "start": "2027-04-02", "end": "2027-06-18" }
+  ],
+  "closedDates": ["2027-04-11"],
+  "reducedDates": ["2026-10-30", "2027-01-08", "2027-01-15"],
+  "regularHours": { "preOpenStart": "17:00", "openStart": "17:30", "openEnd": "21:00", "closeEnd": "21:30" },
+  "reducedHours": { "start": "17:30", "end": "21:00" }
+}

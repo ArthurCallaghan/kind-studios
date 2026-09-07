@@ -1,23 +1,31 @@
 # Kind Studios
 
-Toda la configuración editable está en `config.js`:
+La configuración está separada para que sea más fácil de mantener:
 
-- `users`: códigos, perfiles y nombres.
-- `schedules`: un horario/PDF por fecha (`YYYY-MM-DD`).
+- `users.json`: usuarios, perfiles y códigos de acceso.
+- `pdf-config.json`: horarios, botones de documentos, rutas de PDF y enlace de CNT Play.
 - `checklists`: los viernes que deben aparecer.
 - `checklistGroups`: alumnado, grupos y horarios de Checklist.
-- `collections`: botones y PDFs de las secciones.
 
 ## Añadir PDFs
 
 1. Copia el archivo a la carpeta `PDF/` (puedes usar subcarpetas).
-2. Escribe su ruta relativa en `config.js`, por ejemplo: `PDF/Horarios/11.09.2026.pdf`.
+2. Escribe su ruta relativa en `pdf-config.json`, por ejemplo: `PDF/Horarios/11.09.2026.pdf`.
+3. Para la nueva versión **Letra** de The Final Countdown, deja el archivo en `PDF/Vice Group/The Final Countdown/the-final-countdown-letra.pdf`.
 
 ## Checklists
 
 Las marcas de Checklist se guardan localmente en cada dispositivo. No se envían a ningún servicio externo y no se comparten entre móviles.
 
 Para fijar el resultado de un viernes pasado en todos los dispositivos, edita `checklist-status.json` y publica el cambio. Cada `checkedStudents` empieza vacío (nadie marcado). Por ejemplo, escribe `"checkedStudents": ["Alumno 1", "Alumno 2"]` para que esos dos alumnos aparezcan marcados en ese grupo y fecha. Los viernes pasados que estén en ese archivo pasan a ser de solo lectura en la app.
+
+## Calendario del estudio
+
+`studio-calendar.json` contiene los periodos lectivos, festivos y los viernes de horario reducido. El estado del dashboard se calcula a partir de ese archivo y la Checklist solo muestra los viernes lectivos. Para cambiar horas o fechas en el futuro, edita ese archivo y vuelve a publicarlo.
+
+## Check In de Vice Group
+
+Los perfiles `viceMember` de `users.json` ven Vice Group y Check In. Este último solo se activa los viernes que tienen Vice Group configurado; cada asistencia se guarda localmente en el dispositivo de la alumna.
 
 ## Probarla en móvil
 

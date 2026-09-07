@@ -1,0 +1,47 @@
+{
+  "instructions": "Copia los PDF en la carpeta PDF/ (puedes crear subcarpetas) y escribe aquí su ruta relativa. Deja pdf vacío si aún no existe.",
+  "schedules": {
+    "2026-09-11": { "title": "Horario aún no disponible", "pdf": "", "note": "PDF no publicado todavía." },
+    "2026-09-18": { "title": "Horario Oficial", "pdf": "PDF/Horarios/18.09.2026.pdf", "note": "" },
+    "2026-09-25": { "title": "Horario aún no disponible", "pdf": "", "note": "PDF no publicado todavía." },
+    "2026-10-02": { "title": "Horario aún no disponible", "pdf": "", "note": "PDF no publicado todavía." },
+    "2026-10-09": { "title": "Horario aún no disponible", "pdf": "", "note": "PDF no publicado todavía." },
+    "2026-10-16": { "title": "Horario aún no disponible", "pdf": "", "note": "PDF no publicado todavía." },
+    "2026-10-23": { "title": "Horario aún no disponible", "pdf": "", "note": "PDF no publicado todavía." },
+    "2026-10-30": { "title": "Horario aún no disponible", "pdf": "", "note": "PDF no publicado todavía." },
+    "2026-11-06": { "title": "Horario aún no disponible", "pdf": "", "note": "PDF no publicado todavía." },
+    "2026-11-13": { "title": "Horario aún no disponible", "pdf": "", "note": "PDF no publicado todavía." },
+    "2026-11-20": { "title": "Horario aún no disponible", "pdf": "", "note": "PDF no publicado todavía." },
+    "2026-11-27": { "title": "Horario aún no disponible", "pdf": "", "note": "PDF no publicado todavía." },
+    "2026-12-04": { "title": "Horario aún no disponible", "pdf": "", "note": "PDF no publicado todavía." },
+    "2026-12-11": { "title": "Horario aún no disponible", "pdf": "", "note": "PDF no publicado todavía." },
+    "2026-12-18": { "title": "Horario aún no disponible", "pdf": "", "note": "PDF no publicado todavía." }
+  },
+  "collections": {
+    "threeOfAKind": [
+      { "title": "Póker Night Live 1", "pdf": "PDF/Three of a Kind/poker-night-live-1.pdf" },
+      { "title": "Póker Night Live 2", "pdf": "PDF/Three of a Kind/poker-night-live-2.pdf" },
+      { "title": "Póker Night Live Air", "pdf": "PDF/Three of a Kind/poker-night-live-air.pdf" },
+      { "title": "Póker Night Live 3", "pdf": "PDF/Three of a Kind/poker-night-live-3.pdf" }
+    ],
+    "teatroMusical": [
+      { "title": "Grupo 3" },
+      { "title": "Grupo 4" }
+    ],
+    "viceGroup": [
+      {
+        "title": "The Final Countdown",
+        "items": [
+          { "title": "General", "pdf": "PDF/Vice Group/The Final Countdown/the-final-countdown.pdf" },
+          { "title": "Acordes", "pdf": "PDF/Vice Group/The Final Countdown/the-final-countdown-acordes.pdf" },
+          { "title": "Teclado", "pdf": "PDF/Vice Group/The Final Countdown/the-final-countdown-teclado.pdf" },
+          { "title": "Saxo", "pdf": "PDF/Vice Group/The Final Countdown/the-final-countdown-saxo.pdf" },
+          { "title": "Letra", "pdf": "PDF/Vice Group/The Final Countdown/the-final-countdown-letra.pdf" }
+        ]
+      }
+    ]
+  },
+  "externalLinks": {
+    "cntPlay": "https://www.cntplay.es"
+  }
+}
