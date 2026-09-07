@@ -25,7 +25,7 @@ Para fijar el resultado de un viernes pasado en todos los dispositivos, edita `c
 
 ## Check In de Vice Group
 
-Los perfiles `viceMember` de `users.json` ven Vice Group y Check In. Este último solo se activa los viernes que tienen Vice Group configurado; cada asistencia se guarda localmente en el dispositivo de la alumna.
+Los perfiles `ViceKid` de `users.json` ven Vice Group y Check In. Este último solo se activa los viernes que tienen Vice Group configurado; cada asistencia se guarda localmente en el dispositivo de la alumna.
 
 ## Probarla en móvil
 

@@ -165,8 +165,8 @@
     currentUser = user;
     const expires = Date.now() + cfg.sessionMinutes * 60 * 1000;
     sessionStorage.setItem("controlAccessSession", JSON.stringify({ user, expires }));
-    $("#greeting").textContent = user.profile === "guestStandard" ? "¡Hola!" : `¡Hola, ${user.name}!`;
-    updateDashboard(user.profile || "admin");
+    $("#greeting").textContent = user.profile === "Guest" ? "¡Hola!" : `¡Hola, ${user.name}!`;
+    updateDashboard(user.profile || "Admin");
     $("#manual-dialog").close();
     $("#scanner-dialog").close();
     if ($("#nfc-dialog").open) $("#nfc-dialog").close();
@@ -181,7 +181,7 @@
       const allowed = card.dataset.profiles.split(" ").includes(profile);
       card.hidden = !allowed;
       card.classList.toggle("cnt-card", (card.dataset.wideProfiles || "").split(" ").includes(profile));
-      card.style.order = profile === "member" ? (card.dataset.orderMember || "0") : "0";
+      card.style.order = profile === "Member" ? (card.dataset.orderMember || "0") : "0";
     });
   }
 
@@ -295,7 +295,7 @@
 
   function openCheckinDialog() {
     const dialog = $("#checkin-dialog"), key = formatKey(new Date()), title = $("#checkin-dialog h2"), text = $("#checkin-dialog-text"), confirm = $("#confirm-checkin");
-    if (!currentUser || currentUser.profile !== "viceMember") return;
+    if (!currentUser || currentUser.profile !== "ViceKid") return;
     if (!isViceGroupDay(key)) {
       title.textContent = "Hoy no hay ensayo";
       text.textContent = "El Check In estará disponible el próximo viernes con Vice Group.";

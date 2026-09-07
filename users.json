@@ -1,18 +1,18 @@
 {
-  "instructions": "Edita aquí nombres, perfiles y códigos. Los perfiles disponibles son admin, staff, member, guestStandard, viceAdmin y viceMember.",
+  "instructions": "Edita aquí nombres, perfiles y códigos. Los perfiles disponibles son Admin, Staff, Member, Guest, ViceAdmin y ViceKid.",
   "users": [
-    { "id": "pau-admin", "code": "07032025", "username": "pauescobedo", "name": "Pau", "role": "Administrador", "profile": "admin" },
-    { "id": "pau", "code": "KS-5831-QF27", "username": "", "name": "Pau", "role": "Administrador", "profile": "admin" },
-    { "id": "mariona", "code": "KS-2047-LX63", "username": "", "name": "Mariona", "role": "Staff", "profile": "staff" },
-    { "id": "fermito", "code": "KS-7194-RB05", "username": "", "name": "Pau Fermosel", "role": "Staff", "profile": "staff" },
-    { "id": "carles", "code": "KS-3618-NK42", "username": "", "name": "Carles", "role": "Member", "profile": "member" },
-    { "id": "amanda", "code": "KS-9452-WJ18", "username": "", "name": "Amanda", "role": "Member", "profile": "member" },
-    { "id": "invitado", "code": "KS-6270-TP91", "username": "", "name": "Invitado", "role": "Guest", "profile": "guestStandard" },
-    { "id": "pau-vg", "code": "VG-5831-QF27", "username": "", "name": "Pau", "role": "Vice Group", "profile": "viceAdmin" },
-    { "id": "candela-vg", "code": "VG-8153-KR07", "username": "", "name": "Candela", "role": "Vice Group", "profile": "viceMember" },
-    { "id": "lucia-vg", "code": "VG-2904-DF61", "username": "", "name": "Lucía", "role": "Vice Group", "profile": "viceMember" },
-    { "id": "nivia-vg", "code": "VG-6741-PX35", "username": "", "name": "Nivia", "role": "Vice Group", "profile": "viceMember" },
-    { "id": "julia-vg", "code": "VG-3579-WC84", "username": "", "name": "Júlia", "role": "Vice Group", "profile": "viceMember" },
-    { "id": "uxia-vg", "code": "VG-9216-BN43", "username": "", "name": "Uxía", "role": "Vice Group", "profile": "viceMember" }
+    { "id": "pau-admin", "code": "07032025", "username": "pauescobedo", "name": "Pau", "role": "Admin", "profile": "Admin" },
+    { "id": "pau", "code": "KS-5831-QF27", "username": "", "name": "Pau", "role": "Admin", "profile": "Admin" },
+    { "id": "mariona", "code": "KS-2047-LX63", "username": "", "name": "Mariona", "role": "Staff", "profile": "Staff" },
+    { "id": "fermito", "code": "KS-7194-RB05", "username": "", "name": "Fermito", "role": "Staff", "profile": "Staff" },
+    { "id": "carles", "code": "KS-3618-NK42", "username": "", "name": "Carles", "role": "Member", "profile": "Member" },
+    { "id": "amanda", "code": "KS-9452-WJ18", "username": "", "name": "Amanda", "role": "Member", "profile": "Member" },
+    { "id": "invitado", "code": "KS-6270-TP91", "username": "", "name": "Invitado", "role": "Guest", "profile": "Guest" },
+    { "id": "pau-vg", "code": "VG-5831-QF27", "username": "", "name": "Pau", "role": "ViceAdmin", "profile": "ViceAdmin" },
+    { "id": "candela-vg", "code": "VG-8153-KR07", "username": "", "name": "Candela", "role": "ViceKid", "profile": "ViceKid" },
+    { "id": "lucia-vg", "code": "VG-2904-DF61", "username": "", "name": "Lucía", "role": "ViceKid", "profile": "ViceKid" },
+    { "id": "nivia-vg", "code": "VG-6741-PX35", "username": "", "name": "Nivia", "role": "ViceKid", "profile": "ViceKid" },
+    { "id": "julia-vg", "code": "VG-3579-WC84", "username": "", "name": "Júlia", "role": "ViceKid", "profile": "ViceKid" },
+    { "id": "uxia-vg", "code": "VG-9216-BN43", "username": "", "name": "Uxía", "role": "ViceKid", "profile": "ViceKid" }
   ]
 }
