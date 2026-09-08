@@ -13,8 +13,10 @@
   let currentUser = null;
   let scanner = null;
   let nfcController = null;
-  // Cámara frontal en móvil y webcam habitual en ordenador; se puede cambiar manualmente.
-  let activeCamera = "user";
+  // Trasera en móvil para QR; webcam habitual en ordenador. Se puede cambiar manualmente.
+  const isMobileDevice = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+  const defaultScannerCamera = () => isMobileDevice ? "environment" : "user";
+  let activeCamera = defaultScannerCamera();
   let currentPdfTask = null;
   let currentPdf = null;
   let pdfZoom = 1;
@@ -484,8 +486,8 @@
   setInterval(updateClock, 30_000);
   $("#nfc-button").addEventListener("click", startNfc);
   // No pasar el evento del clic a startScanner: se interpretaría erróneamente como una cámara.
-  // Cada acceso nuevo empieza siempre en la frontal; dentro del escáner se puede cambiar.
-  $("#camera-button").addEventListener("click", () => { activeCamera = "user"; startScanner("user"); });
+  // Cada acceso nuevo usa la trasera en móvil y la webcam en ordenador.
+  $("#camera-button").addEventListener("click", () => { activeCamera = defaultScannerCamera(); startScanner(activeCamera); });
   $("#manual-button").addEventListener("click", () => { $("#manual-username").value = ""; $("#manual-code").value = ""; $("#manual-code").type = "password"; $("#toggle-password").textContent = "Mostrar"; $("#toggle-password").setAttribute("aria-label", "Mostrar clave de acceso"); $("#toggle-password").setAttribute("aria-pressed", "false"); setStatus($("#manual-status"), ""); $("#manual-dialog").showModal(); setTimeout(() => $("#manual-username").focus(), 100); });
   const submitManualCredentials = () => validate($("#manual-code").value, $("#manual-status"), $("#manual-username").value, "credentials");
   $("#submit-code").addEventListener("click", (event) => { event.preventDefault(); submitManualCredentials(); });

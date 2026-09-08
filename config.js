@@ -18,8 +18,8 @@ window.APP_CONFIG = {
     "2026-12-04": {}, "2026-12-11": {}, "2026-12-18": {}
   },
   checklistGroups: {
-    teatroGroup3: { title: "Teatro Musical Grupo 3", time: "17:30 - 18:45", students: ["Berta Martínez", "Mia Ferre", "Elna Juan", "Mariona Pérez", "Cloe Martín", "Naomi Lores", "Elisa Sánchez", "Adrià López", "Gala Pellicer", "Leia Grau", "Alexandra Carreras", "Gala Gonzalez"] },
-    teatroGroup4: { title: "Teatro Musical Grupo 4", time: "18:45 - 20:15", students: ["Mar Gutiérrez", "Júlia Gutiérrez", "Èlia Cabruja", "Alba Munir", "Ariadna Carreras", "Gala Ponce", "Noelia Fernández", "Aina Salmeron", "Noa Pinto", "Maria Pérez", "Iratxe Maraver", "Luca Taravilla", "Nicole Lica", "Elsa Cuenca", "Paula Gallegos", "Arlet Lerroux"] },
+    teatroGroup3: { title: "Teatro Musical Grupo 3", time: "17:30 - 18:45", students: ["Berta Martínez", "Mia Ferre", "Elna Juan", "Mariona Pérez", "Cloe Martín", "Naomi Lores", "Elsa Sánchez", "Adrià López", "Gala Pellicer", "Leia Grau", "Alexandra Carreras", "Gala Gonzalez"] },
+    teatroGroup4: { title: "Teatro Musical Grupo 4", time: "18:45 - 20:15", students: ["Mar Gutiérrez", "Júlia Gutiérrez", "Èlia Cabruja", "Alba Murié", "Ariadna Carreras", "Gala Ponce", "Noelia Fernández", "Aina Salmerón", "Maria Pérez", "Iratxe Maraver", "Lucía Taravilla", "Nicole Lica", "Elsa Cuenca", "Paula Gallegos", "Arlet Lerroux"] },
     viceGroup: { title: "Vice Group", time: "", students: ["Uxía López", "Lucía Curzel", "Candela Blanco", "Júlia Moimeau", "Nivia Dotto"] }
   }
 };

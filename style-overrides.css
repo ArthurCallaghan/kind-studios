@@ -13,7 +13,10 @@
 .accent-lilac > span { background: #f0eaff; color: #7c3aed; }
 .accent-rose { border-color: #e11d7a; }
 .accent-rose > span { background: #fce7f3; color: #db2777; }
-.treble-clef-icon { padding: 0 !important; background: #fce7f3 !important; color: #db2777 !important; font-size: 2.3rem !important; line-height: .9; transform: translateY(-2px); }
+.treble-clef-icon, .clover-icon { display: grid !important; place-items: center; width: 40px !important; height: 40px !important; padding: 0 !important; overflow: hidden; font-size: 1.55rem !important; line-height: 1 !important; transform: none !important; }
+.treble-clef-icon { padding-bottom: 2px !important; }
+.treble-clef-icon { background: #fce7f3 !important; color: #db2777 !important; }
+.clover-icon { background: #e2f7ef !important; color: var(--green) !important; }
 .cnt-card { grid-column: 1 / -1; min-height: 104px; display: grid; grid-template-columns: 40px 1fr; align-items: center; column-gap: 14px; }
 .cnt-card > span { grid-row: 1 / span 2; width: 40px; height: 40px; }
 .cnt-card strong { margin-top: 0; font-size: 1.12rem; }
