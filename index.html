@@ -9,7 +9,7 @@
   <link rel="icon" href="icon.svg?v=20260906-3" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon.svg?v=20260906-3">
   <link rel="stylesheet" href="style.css?v=20260906-2">
-  <link rel="stylesheet" href="style-overrides.css?v=20260907-2">
+  <link rel="stylesheet" href="style-overrides.css?v=20260908-1">
   <title>Kind Studios</title>
 </head>
 <body>
@@ -73,7 +73,7 @@
     </section>
   </main>
 
-  <dialog id="manual-dialog" class="modal"><form method="dialog"><button class="close-modal" value="cancel" formnovalidate aria-label="Cerrar">×</button><p class="eyebrow">ACCESO MANUAL</p><h2>Introduce tus credenciales</h2><label for="manual-username">Usuario</label><input id="manual-username" autocomplete="username" autocapitalize="none" spellcheck="false" inputmode="text" placeholder="Usuario"><label for="manual-code">Clave de acceso</label><input id="manual-code" type="password" autocomplete="current-password" inputmode="text" placeholder="••••••••" required><button id="submit-code" class="primary-button" value="default">Acceder</button><p id="manual-status" class="status" role="status"></p></form></dialog>
+  <dialog id="manual-dialog" class="modal"><form method="dialog"><button class="close-modal" value="cancel" formnovalidate aria-label="Cerrar">×</button><p class="eyebrow">ACCESO MANUAL</p><h2>Introduce tus credenciales</h2><label for="manual-username">Usuario</label><input id="manual-username" autocomplete="username" autocapitalize="none" spellcheck="false" inputmode="text" placeholder="Usuario o código interno"><label for="manual-code">Clave de acceso</label><div class="password-field"><input id="manual-code" type="password" autocomplete="current-password" inputmode="numeric" pattern="[0-9]*" placeholder="••••••"><button id="toggle-password" type="button" aria-label="Mostrar clave de acceso" aria-pressed="false">Mostrar</button></div><button id="submit-code" class="primary-button" value="default">Acceder</button><p id="manual-status" class="status" role="status"></p></form></dialog>
   <dialog id="nfc-dialog" class="modal"><form method="dialog"><button id="stop-nfc" class="close-modal" value="cancel" formnovalidate aria-label="Cerrar">×</button><p class="eyebrow">LECTURA DE TARJETA</p><h2>Acerca tu tarjeta</h2><p id="nfc-status" class="status" role="status">Preparando lector…</p></form></dialog>
   <dialog id="scanner-dialog" class="modal scanner-modal"><form method="dialog"><button id="stop-camera" class="close-modal" value="cancel" formnovalidate aria-label="Cerrar">×</button><p class="eyebrow">ESCÁNER</p><h2>Apunta al código de barras</h2><div id="reader" aria-label="Vista de cámara"></div><button id="switch-camera" class="camera-switch" type="button">↻ Cambiar cámara</button><p id="scanner-status" class="status">Solicitando acceso a la cámara…</p></form></dialog>
   <dialog id="checkin-dialog" class="modal"><form method="dialog"><button class="close-modal" value="cancel" formnovalidate aria-label="Cerrar">×</button><p class="eyebrow">VICE GROUP</p><h2>¿Confirmar Check In?</h2><p id="checkin-dialog-text">Tu asistencia quedará registrada en este dispositivo.</p><button id="confirm-checkin" class="primary-button" value="default">Confirmar</button></form></dialog>
@@ -81,6 +81,6 @@
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="config.js?v=20260907-1"></script>
-  <script src="app.js?v=20260908-2"></script>
+  <script src="app.js?v=20260908-5"></script>
 </body>
 </html>

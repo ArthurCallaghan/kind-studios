@@ -1,7 +1,7 @@
 {
   "instructions": "Edita aquí nombres, perfiles y códigos. Los perfiles disponibles son Admin, Staff, Member, Guest, ViceAdmin y ViceKid.",
   "users": [
-    { "id": "pau", "code": "KS-5831-QF27", "credentialsCode": "07032025", "username": "pauescobedo", "name": "Pau", "role": "Admin", "profile": "Admin" },
+    { "id": "pau", "code": "KS-5831-QF27", "credentialsCode": "080926", "username": "pauescobedo", "name": "Pau", "role": "Admin", "profile": "Admin" },
     { "id": "mariona", "code": "KS-2047-LX63", "username": "", "name": "Mariona", "role": "Staff", "profile": "Staff" },
     { "id": "fermito", "code": "KS-7194-RB05", "username": "", "name": "Fermito", "role": "Staff", "profile": "Staff" },
     { "id": "carles", "code": "KS-3618-NK42", "username": "", "name": "Carles", "role": "Member", "profile": "Member" },

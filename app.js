@@ -193,7 +193,13 @@
     const normalizedCode = String(code || "").trim();
     const normalizedUsername = username === null ? null : String(username).trim();
     if (method === "credentials" && !normalizedCode) {
-      setStatus(statusElement, "Introduce tu clave de acceso.", "error");
+      if (!normalizedUsername) {
+        setStatus(statusElement, "Introduce tu usuario o código interno.", "error");
+        return;
+      }
+      const internalCodeUser = findUser(normalizedUsername, "barcode");
+      if (internalCodeUser && login(internalCodeUser)) { setStatus(statusElement, "Acceso concedido.", "success"); return; }
+      setStatus(statusElement, "Código interno no reconocido.", "error");
       return;
     }
     const user = findUser(code, method);
@@ -398,7 +404,7 @@
     const items = cfg.collections?.[key] || [];
     $("#collection-title").textContent = titles[key];
     $("#collection-list").innerHTML = items.map((item) => {
-      if (item.items) return `<details class="collection-disclosure"><summary><span class="disclosure-title">${item.title}<small>Selecciona una versión</small></span><span class="disclosure-chevron">›</span></summary><div class="collection-sublist">${item.items.map((child) => `<button class="collection-subbutton" type="button" data-pdf="${child.pdf}" data-pdf-title="${child.title}" data-pdf-back="collection" data-pdf-theme="${key}">${child.title}<span>›</span></button>`).join("")}</div></details>`;
+      if (item.items) return `<details class="collection-disclosure"><summary><span class="disclosure-title">${item.title}<small>Selecciona una partitura</small></span><span class="disclosure-chevron">›</span></summary><div class="collection-sublist">${item.items.map((child) => `<button class="collection-subbutton" type="button" data-pdf="${child.pdf}" data-pdf-title="${child.title}" data-pdf-back="collection" data-pdf-theme="${key}">${child.title}<span>›</span></button>`).join("")}</div></details>`;
       if (item.pdf) return `<button class="collection-button" type="button" data-pdf="${item.pdf}" data-pdf-title="${item.title}" data-pdf-back="collection" data-pdf-theme="${key}">${item.title}<span>›</span></button>`;
       return `<button class="collection-button" type="button" disabled>${item.title}<small>Próximamente</small></button>`;
     }).join("");
@@ -472,9 +478,17 @@
   $("#nfc-button").addEventListener("click", startNfc);
   // No pasar el evento del clic a startScanner: se interpretaría erróneamente como una cámara.
   $("#camera-button").addEventListener("click", () => startScanner());
-  $("#manual-button").addEventListener("click", () => { $("#manual-username").value = ""; $("#manual-code").value = ""; setStatus($("#manual-status"), ""); $("#manual-dialog").showModal(); setTimeout(() => $("#manual-username").focus(), 100); });
-  $("#submit-code").addEventListener("click", (event) => { event.preventDefault(); validate($("#manual-code").value, $("#manual-status"), $("#manual-username").value, "credentials"); });
-  $("#manual-code").addEventListener("keydown", (event) => { if (event.key === "Enter") { event.preventDefault(); validate(event.target.value, $("#manual-status"), $("#manual-username").value, "credentials"); } });
+  $("#manual-button").addEventListener("click", () => { $("#manual-username").value = ""; $("#manual-code").value = ""; $("#manual-code").type = "password"; $("#toggle-password").textContent = "Mostrar"; $("#toggle-password").setAttribute("aria-label", "Mostrar clave de acceso"); $("#toggle-password").setAttribute("aria-pressed", "false"); setStatus($("#manual-status"), ""); $("#manual-dialog").showModal(); setTimeout(() => $("#manual-username").focus(), 100); });
+  const submitManualCredentials = () => validate($("#manual-code").value, $("#manual-status"), $("#manual-username").value, "credentials");
+  $("#submit-code").addEventListener("click", (event) => { event.preventDefault(); submitManualCredentials(); });
+  [$("#manual-username"), $("#manual-code")].forEach((input) => input.addEventListener("keydown", (event) => { if (event.key === "Enter") { event.preventDefault(); submitManualCredentials(); } }));
+  $("#toggle-password").addEventListener("click", () => {
+    const input = $("#manual-code"), visible = input.type === "text";
+    input.type = visible ? "password" : "text";
+    $("#toggle-password").textContent = visible ? "Mostrar" : "Ocultar";
+    $("#toggle-password").setAttribute("aria-label", visible ? "Mostrar clave de acceso" : "Ocultar clave de acceso");
+    $("#toggle-password").setAttribute("aria-pressed", String(!visible));
+  });
   $("#stop-camera").addEventListener("click", stopScanner);
   $("#switch-camera").addEventListener("click", switchCamera);
   $("#scanner-dialog").addEventListener("close", stopScanner);
