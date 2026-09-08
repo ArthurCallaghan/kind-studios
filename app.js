@@ -13,8 +13,9 @@
   let currentUser = null;
   let scanner = null;
   let nfcController = null;
-  // En móvil se abre primero la cámara frontal; en ordenador, la webcam habitual.
-  let activeCamera = "user";
+  // En móvil se abre primero la cámara trasera; en ordenador, la webcam habitual.
+  const isMobileDevice = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+  let activeCamera = isMobileDevice ? "environment" : "user";
   let currentPdfTask = null;
   let currentPdf = null;
   let pdfZoom = 1;
@@ -40,7 +41,10 @@
   const isPlaceholder = (url) => !url || /REEMPLAZA/i.test(url);
   const setStatus = (element, message, type = "") => { element.textContent = message; element.className = `status ${type}`; };
   const showScreen = (id) => { screens.forEach((screen) => screen.classList.toggle("active", screen.id === `${id}-screen`)); window.scrollTo(0, 0); };
-  const findUser = (code) => users.find((user) => String(user.code).trim().toLowerCase() === String(code).trim().toLowerCase());
+  const findUser = (code, method = "barcode") => users.find((user) => {
+    const accessCode = method === "credentials" ? (user.credentialsCode || user.code) : user.code;
+    return String(accessCode).trim().toLowerCase() === String(code).trim().toLowerCase();
+  });
 
   async function loadUsers() {
     try {
@@ -159,8 +163,7 @@
     updateStudioStatus(now);
   }
 
-  function login(code) {
-    const user = findUser(code);
+  function login(user) {
     if (!user) return false;
     currentUser = user;
     const expires = Date.now() + cfg.sessionMinutes * 60 * 1000;
@@ -193,13 +196,13 @@
       setStatus(statusElement, "Introduce tu clave de acceso.", "error");
       return;
     }
-    const user = findUser(code);
+    const user = findUser(code, method);
     if (method === "credentials" && user?.username && !normalizedUsername) {
       setStatus(statusElement, "Introduce tu usuario.", "error");
       return;
     }
     const usernameMatches = username === null || (user && String(user.username || "").trim().toLowerCase() === String(normalizedUsername).toLowerCase());
-    if (user && usernameMatches && login(code)) { setStatus(statusElement, "Acceso concedido.", "success"); return; }
+    if (user && usernameMatches && login(user)) { setStatus(statusElement, "Acceso concedido.", "success"); return; }
     const messages = {
       barcode: "Código de barras no reconocido.",
       nfc: "Tarjeta no reconocida.",

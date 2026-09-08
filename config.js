@@ -17,10 +17,9 @@ window.APP_CONFIG = {
     "2026-11-06": { groups: ["teatroGroup3", "teatroGroup4", "viceGroup"] }, "2026-11-13": { groups: ["teatroGroup3", "teatroGroup4", "viceGroup"] }, "2026-11-20": { groups: ["teatroGroup3", "teatroGroup4", "viceGroup"] }, "2026-11-27": {},
     "2026-12-04": {}, "2026-12-11": {}, "2026-12-18": {}
   },
-  // Sustituye "Alumno 1", etc. por los nombres reales cuando los tengas.
   checklistGroups: {
-    teatroGroup3: { title: "Teatro Musical Grupo 3", time: "17:30 - 18:45", students: ["Alumno 1", "Alumno 2", "Alumno 3", "Alumno 4", "Alumno 5", "Alumno 6", "Alumno 7", "Alumno 8"] },
-    teatroGroup4: { title: "Teatro Musical Grupo 4", time: "18:45 - 20:15", students: ["Alumno 1", "Alumno 2", "Alumno 3", "Alumno 4", "Alumno 5", "Alumno 6", "Alumno 7", "Alumno 8", "Alumno 9", "Alumno 10", "Alumno 11", "Alumno 12", "Alumno 13", "Alumno 14", "Alumno 15", "Alumno 16"] },
+    teatroGroup3: { title: "Teatro Musical Grupo 3", time: "17:30 - 18:45", students: ["Berta Martínez", "Mia Ferre", "Elna Juan", "Mariona Pérez", "Cloe Martín", "Naomi Lores", "Elisa Sánchez", "Adrià López", "Gala Pellicer", "Leia Grau", "Alexandra Carreras", "Gala Gonzalez"] },
+    teatroGroup4: { title: "Teatro Musical Grupo 4", time: "18:45 - 20:15", students: ["Mar Gutiérrez", "Júlia Gutiérrez", "Èlia Cabruja", "Alba Munir", "Ariadna Carreras", "Gala Ponce", "Noelia Fernández", "Aina Salmeron", "Noa Pinto", "Maria Pérez", "Iratxe Maraver", "Luca Taravilla", "Nicole Lica", "Elsa Cuenca", "Paula Gallegos", "Arlet Lerroux"] },
     viceGroup: { title: "Vice Group", time: "", students: ["Uxía López", "Lucía Curzel", "Candela Blanco", "Júlia Moimeau", "Nivia Dotto"] }
   }
 };

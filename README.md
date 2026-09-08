@@ -7,6 +7,8 @@ La configuración está separada para que sea más fácil de mantener:
 - `checklists`: los viernes que deben aparecer.
 - `checklistGroups`: alumnado, grupos y horarios de Checklist.
 
+Para un usuario que use dos métodos, conserva `code` para tarjeta/NFC/código de barras y añade `credentialsCode` para la clave de acceso manual. Pau ya está configurado así con un único registro.
+
 ## Añadir PDFs
 
 1. Copia el archivo a la carpeta `PDF/` (puedes usar subcarpetas).
