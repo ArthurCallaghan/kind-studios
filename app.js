@@ -209,7 +209,7 @@
     const usernameMatches = username === null || (user && String(user.username || "").trim().toLowerCase() === String(normalizedUsername).toLowerCase());
     if (user && usernameMatches && login(user)) { setStatus(statusElement, "Acceso concedido.", "success"); return; }
     const messages = {
-      barcode: "Código de barras no reconocido.",
+      barcode: "Código QR no reconocido.",
       nfc: "Tarjeta no reconocida.",
       credentials: "Usuario o clave de acceso incorrectos."
     };
@@ -452,10 +452,14 @@
       scanner = new Html5Qrcode("reader");
       await scanner.start({ facingMode: activeCamera }, {
         fps: 10,
-        qrbox: { width: 260, height: 150 },
-        formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE, Html5QrcodeSupportedFormats.CODE_128, Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.EAN_8]
+        // Mantiene la guía blanca cuadrada y la hace tan grande como permita la cámara.
+        qrbox: (width, height) => {
+          const side = Math.max(160, Math.min(width, height) - 24);
+          return { width: side, height: side };
+        },
+        formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE]
       }, (code) => validate(code, status, null, "barcode"));
-      setStatus(status, activeCamera === "user" ? "Escanea un QR o código de barras con la cámara frontal." : "Escanea un QR o código de barras con la cámara trasera.");
+      setStatus(status, activeCamera === "user" ? "Escanea el código QR con la cámara frontal." : "Escanea el código QR con la cámara trasera.");
     } catch (_) {
       // Un intento fallido puede dejar el visor creado; límpialo para que el cambio manual de cámara funcione.
       if (scanner) {
