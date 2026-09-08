@@ -13,9 +13,8 @@
   let currentUser = null;
   let scanner = null;
   let nfcController = null;
-  // En móvil se abre primero la cámara trasera; en ordenador, la webcam habitual.
-  const isMobileDevice = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
-  let activeCamera = isMobileDevice ? "environment" : "user";
+  // Cámara frontal en móvil y webcam habitual en ordenador; se puede cambiar manualmente.
+  let activeCamera = "user";
   let currentPdfTask = null;
   let currentPdf = null;
   let pdfZoom = 1;
@@ -442,23 +441,7 @@
   }
   function stopNfc() { if (nfcController) { nfcController.abort(); nfcController = null; } }
 
-  async function scannerVideoConstraints(camera) {
-    const resolution = { width: { ideal: 1920 }, height: { ideal: 1080 } };
-    if (camera !== "environment" || !isMobileDevice) return { facingMode: camera, ...resolution };
-    try {
-      // En algunos Samsung hay varias lentes traseras. Preferimos la trasera principal
-      // y evitamos, cuando el navegador la identifica, ultra gran angular/macro/tele.
-      const cameras = await Html5Qrcode.getCameras();
-      const rear = cameras.filter((item) => /back|rear|environment/i.test(item.label) && !/front|user/i.test(item.label));
-      const preferred = rear.find((item) => !/ultra|wide|macro|tele/i.test(item.label)) || rear[0];
-      if (preferred) return { deviceId: { exact: preferred.id }, ...resolution };
-    } catch (_) {
-      // Si el navegador no enumera cámaras todavía, facingMode sigue siendo un buen respaldo.
-    }
-    return { facingMode: "environment", ...resolution };
-  }
-
-  // Vista amplia y enfoque continuo para códigos de barras cercanos en móviles.
+  // Configuración sencilla: es la opción más compatible con móviles y ordenadores.
   async function startScanner(camera = activeCamera) {
     const dialog = $("#scanner-dialog"), status = $("#scanner-status");
     activeCamera = camera;
@@ -467,19 +450,12 @@
     try {
       setStatus(status, "Abriendo la cámara…");
       scanner = new Html5Qrcode("reader");
-      const videoConstraints = await scannerVideoConstraints(activeCamera);
-      // Los navegadores que no soporten focusMode ignoran esta preferencia sin fallar.
-      if (activeCamera === "environment") videoConstraints.focusMode = "continuous";
-      await scanner.start(videoConstraints, {
-        fps: 12,
-        disableFlip: true,
-        aspectRatio: 16 / 9,
-        // Mantiene el recuadro blanco, pero lo lleva casi hasta los bordes para
-        // aprovechar al máximo la imagen de cámara al leer tarjetas cercanas.
-        qrbox: (width, height) => ({ width: Math.max(160, width - 28), height: Math.max(110, height - 28) }),
-        formatsToSupport: [Html5QrcodeSupportedFormats.CODE_128, Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.EAN_8]
+      await scanner.start({ facingMode: activeCamera }, {
+        fps: 10,
+        qrbox: { width: 260, height: 150 },
+        formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE, Html5QrcodeSupportedFormats.CODE_128, Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.EAN_8]
       }, (code) => validate(code, status, null, "barcode"));
-      setStatus(status, activeCamera === "user" ? "Usa la cámara frontal para enfocar el código de barras." : "Acerca la tarjeta o código a la cámara trasera y espera a que enfoque.");
+      setStatus(status, activeCamera === "user" ? "Escanea un QR o código de barras con la cámara frontal." : "Escanea un QR o código de barras con la cámara trasera.");
     } catch (_) {
       // Un intento fallido puede dejar el visor creado; límpialo para que el cambio manual de cámara funcione.
       if (scanner) {
