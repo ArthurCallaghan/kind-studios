@@ -85,6 +85,9 @@ body { touch-action: pan-y; }
 .password-field { position: relative; }
 .password-field input { padding-right: 88px; }
 .password-field button { position: absolute; top: 50%; right: 8px; transform: translateY(-50%); border: 0; border-radius: 8px; padding: 7px 9px; background: #eaf1ff; color: var(--blue); font-size: .78rem; font-weight: 800; }
+.scanner-modal { width: min(calc(100% - 16px), 560px); max-width: 560px; padding: 18px; }
+.scanner-modal #reader { min-height: clamp(280px, 54dvh, 520px); }
+.scanner-modal #reader video { width: 100% !important; height: auto !important; object-fit: cover; }
 .pdf-viewer { display: flex; align-items: flex-start; gap: 18px; height: calc(100dvh - 160px); min-height: 420px; margin-top: 28px; padding: 14px; overflow: auto; scroll-snap-type: none; overscroll-behavior: contain; touch-action: pan-x pan-y; border: 1px solid var(--line); border-radius: 18px; background: #e8edf5; color: var(--muted); }
 .pdf-page { flex: 0 0 auto; width: max-content; scroll-snap-align: start; background: white; box-shadow: 0 4px 16px #17203324; }
 .pdf-page canvas { display: block; }
