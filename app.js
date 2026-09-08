@@ -454,7 +454,7 @@
         fps: 10,
         // Mantiene la guía blanca cuadrada y la hace tan grande como permita la cámara.
         qrbox: (width, height) => {
-          const side = Math.max(160, Math.min(width, height) - 24);
+          const side = Math.max(160, Math.round(Math.min(width, height) * 0.78));
           return { width: side, height: side };
         },
         formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE]
@@ -484,7 +484,8 @@
   setInterval(updateClock, 30_000);
   $("#nfc-button").addEventListener("click", startNfc);
   // No pasar el evento del clic a startScanner: se interpretaría erróneamente como una cámara.
-  $("#camera-button").addEventListener("click", () => startScanner());
+  // Cada acceso nuevo empieza siempre en la frontal; dentro del escáner se puede cambiar.
+  $("#camera-button").addEventListener("click", () => { activeCamera = "user"; startScanner("user"); });
   $("#manual-button").addEventListener("click", () => { $("#manual-username").value = ""; $("#manual-code").value = ""; $("#manual-code").type = "password"; $("#toggle-password").textContent = "Mostrar"; $("#toggle-password").setAttribute("aria-label", "Mostrar clave de acceso"); $("#toggle-password").setAttribute("aria-pressed", "false"); setStatus($("#manual-status"), ""); $("#manual-dialog").showModal(); setTimeout(() => $("#manual-username").focus(), 100); });
   const submitManualCredentials = () => validate($("#manual-code").value, $("#manual-status"), $("#manual-username").value, "credentials");
   $("#submit-code").addEventListener("click", (event) => { event.preventDefault(); submitManualCredentials(); });
