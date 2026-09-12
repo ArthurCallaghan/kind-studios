@@ -137,7 +137,7 @@
     }
     if (state === "closed" && calendar) {
       const next = nextStudioOpening(now, calendar);
-      if (next) detail = `Próxima apertura: ${formatDateLabel(dateFromKey(next.key))} · ${next.opening}`;
+      if (next) detail = `Próxima apertura: ${formatDateLabel(dateFromKey(next.key))}, a las ${next.opening}`;
     }
     status.dataset.state = state;
     status.innerHTML = `<span class="studio-light" aria-hidden="true"></span><span><strong>${message}</strong>${detail ? `<small>${detail}</small>` : ""}</span>`;
@@ -484,7 +484,8 @@
   loadPdfConfig();
   loadArchivedChecklistStatus();
   loadStudioCalendar();
-  setInterval(updateClock, 30_000);
+  // El reloj y el estado del estudio cambian en cuanto cambia el minuto.
+  setInterval(updateClock, 1_000);
   $("#nfc-button").addEventListener("click", startNfc);
   // No pasar el evento del clic a startScanner: se interpretaría erróneamente como una cámara.
   // Cada acceso nuevo usa la trasera en móvil y la webcam en ordenador.
