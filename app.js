@@ -111,7 +111,8 @@
       const key = formatKey(candidate);
       if (candidate.getDay() !== 5 || !isTeachingDate(key, calendar)) continue;
       const reduced = (calendar.reducedDates || []).includes(key);
-      const opening = reduced ? calendar.reducedHours.start : calendar.regularHours.preOpenStart;
+      // La próxima apertura es el inicio real de actividad, no el tramo previo de preparación.
+      const opening = reduced ? calendar.reducedHours.start : calendar.regularHours.openStart;
       if (offset || now.getHours() * 60 + now.getMinutes() < minutesFromTime(opening)) return { key, opening };
     }
     return null;

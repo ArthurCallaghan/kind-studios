@@ -13,7 +13,7 @@ window.APP_CONFIG = {
   // Checklist de administración: solo se muestran los viernes incluidos aquí.
   checklists: {
     "2026-09-04": {}, "2026-09-11": {}, "2026-09-18": {}, "2026-09-25": {},
-    "2026-10-02": {}, "2026-10-09": { groups: ["teatroGroup3", "teatroGroup4", "viceGroup"] }, "2026-10-16": { groups: ["teatroGroup3", "teatroGroup4", "viceGroup"] }, "2026-10-23": { groups: ["teatroGroup3", "teatroGroup4", "viceGroup"] }, "2026-10-30": {},
+    "2026-10-02": { groups: ["teatroGroup3", "teatroGroup4", "viceGroup"] }, "2026-10-09": { groups: ["teatroGroup3", "teatroGroup4", "viceGroup"] }, "2026-10-16": { groups: ["teatroGroup3", "teatroGroup4", "viceGroup"] }, "2026-10-23": { groups: ["teatroGroup3", "teatroGroup4", "viceGroup"] }, "2026-10-30": {},
     "2026-11-06": { groups: ["teatroGroup3", "teatroGroup4", "viceGroup"] }, "2026-11-13": { groups: ["teatroGroup3", "teatroGroup4", "viceGroup"] }, "2026-11-20": { groups: ["teatroGroup3", "teatroGroup4", "viceGroup"] }, "2026-11-27": {},
     "2026-12-04": {}, "2026-12-11": {}, "2026-12-18": {}
   },
