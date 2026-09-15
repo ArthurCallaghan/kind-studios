@@ -91,7 +91,7 @@
 
   async function loadStudioCalendar() {
     try {
-      const response = await fetch("studio-calendar.json", { cache: "no-store" });
+      const response = await fetch("studio-calendar.json?v=20260915-1", { cache: "no-store" });
       if (!response.ok) return;
       studioCalendar = await response.json();
       updateChecklistKeys();
