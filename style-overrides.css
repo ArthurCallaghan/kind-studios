@@ -14,8 +14,9 @@
 .accent-rose { border-color: #e11d7a; }
 .accent-rose > span { background: #fce7f3; color: #db2777; }
 .treble-clef-icon, .clover-icon { display: grid !important; place-items: center; width: 40px !important; height: 40px !important; padding: 0 !important; overflow: hidden; font-size: 1.5rem !important; line-height: 1 !important; transform: none !important; }
-.treble-clef-icon { font-family: Georgia, "Times New Roman", serif; font-size: 1.4rem !important; }
+.treble-clef-icon { padding: 4px !important; font-family: Georgia, "Times New Roman", serif; font-size: 1.08rem !important; line-height: 1 !important; }
 .treble-clef-icon { background: #fce7f3 !important; color: #db2777 !important; }
+#greeting { line-height: 1.12; }
 .clover-icon { background: #e2f7ef !important; color: var(--green) !important; }
 .cnt-card { grid-column: 1 / -1; min-height: 104px; display: grid; grid-template-columns: 40px 1fr; align-items: center; column-gap: 14px; }
 .cnt-card > span { grid-row: 1 / span 2; width: 40px; height: 40px; }
