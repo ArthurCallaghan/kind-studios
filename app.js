@@ -171,7 +171,15 @@
     const time = new Intl.DateTimeFormat("es-ES", { hour: "2-digit", minute: "2-digit" }).format(now);
     const titledDay = `${day.charAt(0).toUpperCase()}${day.slice(1)}`;
     $("#current-date-time").textContent = `${titledDay} · ${time}`;
+    updateGreeting(now);
     updateStudioStatus(now);
+  }
+
+  function updateGreeting(now = new Date()) {
+    if (!currentUser) return;
+    const hour = now.getHours();
+    const greeting = hour >= 6 && hour < 12 ? "Buenos días" : hour >= 12 && hour < 20 ? "Buenas tardes" : "Buenas noches";
+    $("#greeting").textContent = currentUser.profile === "Guest" ? `¡${greeting}!` : `¡${greeting}, ${currentUser.name}!`;
   }
 
   function login(user) {
@@ -179,7 +187,7 @@
     currentUser = user;
     const expires = Date.now() + cfg.sessionMinutes * 60 * 1000;
     sessionStorage.setItem("controlAccessSession", JSON.stringify({ user, expires }));
-    $("#greeting").textContent = user.profile === "Guest" ? "¡Hola!" : `¡Hola, ${user.name}!`;
+    updateGreeting();
     updateDashboard(user.profile || "Admin");
     $("#manual-dialog").close();
     $("#scanner-dialog").close();
