@@ -10,6 +10,7 @@
   let studioCalendar = null;
   let users = [];
   let usersReady = false;
+  let usersLoadPromise = null;
   let currentUser = null;
   let scanner = null;
   let nfcController = null;
@@ -48,16 +49,20 @@
   });
 
   async function loadUsers() {
-    try {
-      const response = await fetch("users.json", { cache: "no-store" });
-      if (!response.ok) throw new Error("No disponible");
-      const data = await response.json();
-      users = Array.isArray(data.users) ? data.users : [];
-    } catch (_) {
-      users = [];
-    } finally {
-      usersReady = true;
-    }
+    if (usersLoadPromise) return usersLoadPromise;
+    usersLoadPromise = (async () => {
+      try {
+        const response = await fetch("users.json?v=20260917-1", { cache: "no-store" });
+        if (!response.ok) throw new Error("No disponible");
+        const data = await response.json();
+        users = Array.isArray(data.users) ? data.users : [];
+      } catch (_) {
+        users = [];
+      } finally {
+        usersReady = true;
+      }
+    })();
+    return usersLoadPromise;
   }
 
   async function loadPdfConfig() {
@@ -137,7 +142,11 @@
     }
     if (state === "closed" && calendar) {
       const next = nextStudioOpening(now, calendar);
-      if (next) detail = `Próxima apertura: ${formatDateLabel(dateFromKey(next.key))}, a las ${next.opening}`;
+      if (next) {
+        const daysUntil = Math.round((dateFromKey(next.key) - dateFromKey(formatKey(now))) / 86_400_000);
+        const when = daysUntil === 0 ? "Hoy" : daysUntil === 1 ? "Mañana" : daysUntil <= 14 ? "Este viernes" : formatDateLabel(dateFromKey(next.key));
+        detail = `Próxima apertura: ${when} a las ${next.opening}`;
+      }
     }
     status.dataset.state = state;
     status.innerHTML = `<span class="studio-light" aria-hidden="true"></span><span><strong>${message}</strong>${detail ? `<small>${detail}</small>` : ""}</span>`;
@@ -190,8 +199,11 @@
     });
   }
 
-  function validate(code, statusElement, username = null, method = "credentials") {
-    if (!usersReady) { setStatus(statusElement, "Cargando usuarios…", ""); return; }
+  async function validate(code, statusElement, username = null, method = "credentials") {
+    if (!usersReady) {
+      setStatus(statusElement, "Cargando usuarios…", "");
+      await loadUsers();
+    }
     const normalizedCode = String(code || "").trim();
     const normalizedUsername = username === null ? null : String(username).trim();
     if (method === "credentials" && !normalizedCode) {
@@ -351,6 +363,9 @@
     $("#document-title").textContent = title;
     $("#document-screen [data-back]").dataset.back = backTarget;
     $("#document-screen").dataset.theme = theme;
+    const download = $("#document-download");
+    download.href = encodeURI(pdf);
+    download.download = pdf.split("/").at(-1) || "documento.pdf";
     showScreen("document");
     const viewer = $("#document-viewer");
     viewer.replaceChildren();
