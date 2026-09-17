@@ -468,7 +468,7 @@
     if (!dialog.open) dialog.showModal();
     if (!("NDEFReader" in window)) {
       const isiPhone = /iPad|iPhone|iPod/.test(navigator.userAgent);
-      setStatus(status, isiPhone ? "El iPhone tiene NFC, pero Safari y las apps web no permiten leer tarjetas NFC. Usa el código de barras o la clave." : "NFC no está disponible en este navegador. Puedes usar la cámara o la clave.", "error");
+      setStatus(status, isiPhone ? "El iPhone tiene NFC, pero Safari y las apps web no permiten leer tarjetas NFC. Usa el código QR o las credenciales." : "NFC no está disponible en este navegador. Puedes usar la cámara o las credenciales.", "error");
       return;
     }
     try {
