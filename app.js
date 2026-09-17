@@ -324,18 +324,33 @@
     return isTeachingDate(key) && Boolean(cfg.checklists?.[key]?.groups?.includes("viceGroup"));
   }
 
+  function checkinGroupForUser(user) {
+    if (user?.profile === "ViceKid") return "viceGroup";
+    if (user?.profile === "Special") return "teatroGroup4";
+    return null;
+  }
+
+  function isCheckinDay(user, key) {
+    if (user?.profile === "ViceKid") return isViceGroupDay(key);
+    return user?.profile === "Special" && dateFromKey(key).getDay() === 5 && isTeachingDate(key);
+  }
+
+  const normalizedName = (value) => String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+
   function openCheckinDialog() {
     const dialog = $("#checkin-dialog"), key = formatKey(new Date()), title = $("#checkin-dialog h2"), text = $("#checkin-dialog-text"), confirm = $("#confirm-checkin");
-    if (!currentUser || currentUser.profile !== "ViceKid") return;
-    if (!isViceGroupDay(key)) {
-      title.textContent = "Hoy no hay ensayo";
-      text.textContent = "El Check In estará disponible el próximo viernes con Vice Group.";
+    if (!checkinGroupForUser(currentUser)) return;
+    const isSpecial = currentUser.profile === "Special";
+    $("#checkin-dialog .eyebrow").textContent = isSpecial ? "TEATRO MUSICAL" : "VICE GROUP";
+    if (!isCheckinDay(currentUser, key)) {
+      title.textContent = isSpecial ? "Hoy no hay clase" : "Hoy no hay ensayo";
+      text.textContent = isSpecial ? "El Check In estará disponible el próximo viernes lectivo de Teatro Musical." : "El Check In estará disponible el próximo viernes con Vice Group.";
       confirm.hidden = true;
       confirm.disabled = true;
     } else {
       const checkin = localStorage.getItem(checkinStorageKey(currentUser.id, key));
       title.textContent = checkin ? "Check In completado" : "¿Confirmar Check In?";
-      text.textContent = checkin ? `Tu asistencia se confirmó a las ${checkin}.` : "Confirma tu llegada al ensayo de Vice Group.";
+      text.textContent = checkin ? `Tu asistencia se confirmó a las ${checkin}.` : isSpecial ? "Confirma tu llegada a Teatro Musical Grupo 4." : "Confirma tu llegada al ensayo de Vice Group.";
       confirm.hidden = Boolean(checkin);
       confirm.disabled = Boolean(checkin);
     }
@@ -343,17 +358,21 @@
   }
 
   function confirmCheckin() {
-    if (!currentUser || !isViceGroupDay(formatKey(new Date()))) return;
-    const key = formatKey(new Date());
+    const groupKey = checkinGroupForUser(currentUser), key = formatKey(new Date());
+    if (!groupKey || !isCheckinDay(currentUser, key)) return;
     const time = new Intl.DateTimeFormat("es-ES", { hour: "2-digit", minute: "2-digit" }).format(new Date());
     localStorage.setItem(checkinStorageKey(currentUser.id, key), time);
-    const students = cfg.checklistGroups?.viceGroup?.students || [];
-    const studentIndex = students.indexOf(currentUser.name);
+    const students = cfg.checklistGroups?.[groupKey]?.students || [];
+    const currentName = normalizedName(currentUser.name);
+    const studentIndex = students.findIndex((student) => {
+      const name = normalizedName(student);
+      return name === currentName || name.startsWith(`${currentName} `);
+    });
     if (studentIndex >= 0) {
       let state = {};
-      try { state = JSON.parse(localStorage.getItem(checklistStorageKey("viceGroup", key)) || "{}"); } catch (_) {}
+      try { state = JSON.parse(localStorage.getItem(checklistStorageKey(groupKey, key)) || "{}"); } catch (_) {}
       state[studentIndex] = true;
-      localStorage.setItem(checklistStorageKey("viceGroup", key), JSON.stringify(state));
+      localStorage.setItem(checklistStorageKey(groupKey, key), JSON.stringify(state));
     }
     $("#checkin-dialog").close();
     if ($("#checklist-screen").classList.contains("active")) renderChecklist();
