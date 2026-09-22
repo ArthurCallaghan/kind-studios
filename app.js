@@ -40,6 +40,11 @@
   if (formatKey(selectedDate) < scheduleStart) selectedDate = dateFromKey(scheduleStart);
   if (formatKey(selectedDate) > scheduleEnd) selectedDate = dateFromKey(scheduleEnd);
   selectedChecklistKey = checklistKeys.find((key) => key >= formatKey(date)) || checklistKeys.at(-1) || null;
+  const getReferenceChecklistKey = (now = new Date()) => checklistKeys.find((key) => key >= formatKey(now)) || checklistKeys.at(-1) || null;
+  const updateChecklistTodayLabel = (now = new Date()) => {
+    const referenceKey = getReferenceChecklistKey(now);
+    $("#checklist-today-button").textContent = referenceKey === formatKey(now) ? "Hoy" : "Próximo viernes";
+  };
   const isPlaceholder = (url) => !url || /REEMPLAZA/i.test(url);
   const setStatus = (element, message, type = "") => { element.textContent = message; element.className = `status ${type}`; };
   const showScreen = (id) => { screens.forEach((screen) => screen.classList.toggle("active", screen.id === `${id}-screen`)); window.scrollTo(0, 0); };
@@ -91,7 +96,7 @@
 
   function updateChecklistKeys() {
     checklistKeys = buildFridayKeys(cfg.checklistRange?.start || scheduleStart, cfg.checklistRange?.end || scheduleEnd).filter((key) => isTeachingDate(key));
-    if (!checklistKeys.includes(selectedChecklistKey)) selectedChecklistKey = checklistKeys.find((key) => key >= formatKey(date)) || checklistKeys.at(-1) || null;
+    if (!checklistKeys.includes(selectedChecklistKey)) selectedChecklistKey = getReferenceChecklistKey();
   }
 
   async function loadStudioCalendar() {
@@ -154,7 +159,7 @@
 
   async function loadArchivedChecklistStatus() {
     try {
-      const response = await fetch("checklist-status.json", { cache: "no-store" });
+      const response = await fetch("checklist-status.json?v=20260922-1", { cache: "no-store" });
       if (!response.ok) return;
       archivedChecklistStatus = await response.json();
       if ($("#checklist-screen").classList.contains("active")) renderChecklist();
@@ -172,6 +177,7 @@
     const titledDay = `${day.charAt(0).toUpperCase()}${day.slice(1)}`;
     $("#current-date-time").textContent = `${titledDay} · ${time}`;
     updateGreeting(now);
+    updateChecklistTodayLabel(now);
     updateStudioStatus(now);
   }
 
@@ -272,13 +278,13 @@
     }
     const selected = new Date(`${selectedChecklistKey}T12:00:00`);
     const entry = cfg.checklists?.[selectedChecklistKey] || {};
-    const referenceKey = checklistKeys.find((key) => key >= formatKey(date)) || checklistKeys.at(-1);
+    const referenceKey = getReferenceChecklistKey();
     $("#checklist-today-button").classList.toggle("active", selectedChecklistKey === referenceKey);
     const groupKeys = entry.groups || ["teatroGroup3", "teatroGroup4"];
     const groups = cfg.checklistGroups || {};
     card.innerHTML = `<p class="schedule-date">${formatDateLabel(selected)}</p><h2>Checklist de alumno/as</h2><div class="checklist-groups">${groupKeys.map((key) => {
       const group = groups[key]; if (!group) return "";
-      const archived = selectedChecklistKey < formatKey(date);
+      const archived = selectedChecklistKey < formatKey(new Date());
       const state = getChecklistState(key, group.students, archived);
       const time = group.time ? `<small>${group.time}</small>` : "";
       return `<details class="checklist-disclosure"><summary><span class="disclosure-title">${group.title}${time}</span><span class="disclosure-chevron">›</span></summary><div class="checklist-student-list">${group.students.map((student, index) => `<label class="checklist-student"><input type="checkbox" data-checklist-student="${index}" data-checklist-group="${key}"${state[index] ? " checked" : ""}${archived ? " disabled" : ""}><span>${student}</span></label>`).join("")}</div></details>`;
@@ -566,10 +572,10 @@
   $("#previous-checklist").addEventListener("click", () => moveChecklist(-1));
   $("#next-checklist").addEventListener("click", () => moveChecklist(1));
   $("#checklist-today-button").addEventListener("click", () => {
-    selectedChecklistKey = checklistKeys.find((key) => key >= formatKey(date)) || checklistKeys.at(-1) || null;
+    selectedChecklistKey = getReferenceChecklistKey();
     renderChecklist();
   });
-  $("#checklist-today-button").textContent = date.getDay() === 5 ? "Hoy" : "Próximo viernes";
+  updateChecklistTodayLabel();
   const pinchDistance = (touches) => Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY);
   const viewer = $("#document-viewer");
   viewer.addEventListener("touchstart", (event) => {
