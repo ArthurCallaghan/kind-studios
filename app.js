@@ -46,6 +46,8 @@
     $("#checklist-today-button").textContent = referenceKey === formatKey(now) ? "Hoy" : "Próximo viernes";
   };
   const isPlaceholder = (url) => !url || /REEMPLAZA/i.test(url);
+  // Codifica cada carpeta/archivo sin convertir las barras: así nombres con `?`, espacios o paréntesis funcionan bien.
+  const pdfUrl = (path) => path.split("/").map((segment) => encodeURIComponent(segment)).join("/");
   const setStatus = (element, message, type = "") => { element.textContent = message; element.className = `status ${type}`; };
   const showScreen = (id) => { screens.forEach((screen) => screen.classList.toggle("active", screen.id === `${id}-screen`)); window.scrollTo(0, 0); };
   const findUser = (code, method = "barcode") => users.find((user) => {
@@ -397,7 +399,7 @@
     $("#document-screen [data-back]").dataset.back = backTarget;
     $("#document-screen").dataset.theme = theme;
     const download = $("#document-download");
-    download.href = encodeURI(pdf);
+    download.href = pdfUrl(pdf);
     download.download = pdf.split("/").at(-1) || "documento.pdf";
     showScreen("document");
     const viewer = $("#document-viewer");
@@ -407,7 +409,7 @@
       if (!window.pdfjsLib) throw new Error("PDF.js no disponible");
       window.pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
       currentPdfTask?.destroy();
-      currentPdfTask = window.pdfjsLib.getDocument(encodeURI(pdf));
+      currentPdfTask = window.pdfjsLib.getDocument(pdfUrl(pdf));
       const documentPdf = await currentPdfTask.promise;
       viewer.replaceChildren();
       for (let pageNumber = 1; pageNumber <= documentPdf.numPages; pageNumber += 1) {
@@ -432,7 +434,7 @@
       viewer.replaceChildren();
       const fallback = document.createElement("iframe");
       fallback.className = "pdf-fallback";
-      fallback.src = encodeURI(pdf);
+      fallback.src = pdfUrl(pdf);
       fallback.title = title;
       viewer.append(fallback);
     }
