@@ -72,7 +72,7 @@
 
   async function loadPdfConfig() {
     try {
-      const response = await fetch("pdf-config.json", { cache: "no-store" });
+      const response = await fetch("pdf-config.json?v=20260924-1", { cache: "no-store" });
       if (!response.ok) throw new Error("No disponible");
       const data = await response.json();
       cfg.schedules = data.schedules || {};

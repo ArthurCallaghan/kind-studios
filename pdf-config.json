@@ -30,13 +30,66 @@
     ],
     "viceGroup": [
       {
+        "title": "Waka Waka",
+        "items": [
+          { "title": "General", "pdf": "PDF/Vice Group/Waka Waka/Waka Waka.pdf" },
+          { "title": "Acordes", "pdf": "PDF/Vice Group/Waka Waka/Waka Waka - Acords.pdf" },
+          { "title": "Teclado", "pdf": "PDF/Vice Group/Waka Waka/Waka Waka - Teclat.pdf" },
+          { "title": "Letra", "pdf": "PDF/Vice Group/Waka Waka/Waka Waka - Lletra.pdf" }
+        ]
+      },
+      {
+        "title": "...Baby One More Time",
+        "items": [
+          { "title": "General", "pdf": "PDF/Vice Group/Baby One More Time/Baby One More Time.pdf" },
+          { "title": "Acordes", "pdf": "PDF/Vice Group/Baby One More Time/Baby One More Time - Acords.pdf" },
+          { "title": "Teclado", "pdf": "PDF/Vice Group/Baby One More Time/Baby One More Time - Teclat.pdf" },
+          { "title": "Letra", "pdf": "PDF/Vice Group/Baby One More Time/Baby One More Time - Lletra.pdf" }
+        ]
+      },
+      {
+        "title": "Sweet Caroline",
+        "items": [
+          { "title": "General", "pdf": "PDF/Vice Group/Sweet Caroline/Sweet Caroline.pdf" },
+          { "title": "Acordes", "pdf": "PDF/Vice Group/Sweet Caroline/Sweet Caroline - Acords.pdf" },
+          { "title": "Teclado", "pdf": "PDF/Vice Group/Sweet Caroline/Sweet Caroline - Teclat.pdf" },
+          { "title": "Letra", "pdf": "PDF/Vice Group/Sweet Caroline/Sweet Caroline - Lletra.pdf" }
+        ]
+      },
+      {
+        "title": "Livin' On A Prayer",
+        "items": [
+          { "title": "General", "pdf": "PDF/Vice Group/Livin' On A Prayer/Livin' On A Prayer.pdf" },
+          { "title": "Acordes", "pdf": "PDF/Vice Group/Livin' On A Prayer/Livin' On A Prayer - Acords.pdf" },
+          { "title": "Teclado", "pdf": "PDF/Vice Group/Livin' On A Prayer/Livin' On A Prayer - Teclat.pdf" },
+          { "title": "Letra", "pdf": "PDF/Vice Group/Livin' On A Prayer/Livin' On A Prayer - Lletra.pdf" }
+        ]
+      },
+      {
         "title": "The Final Countdown",
         "items": [
-          { "title": "General", "pdf": "PDF/Vice Group/The Final Countdown/the-final-countdown.pdf" },
-          { "title": "Acordes", "pdf": "PDF/Vice Group/The Final Countdown/the-final-countdown-acordes.pdf" },
-          { "title": "Teclado", "pdf": "PDF/Vice Group/The Final Countdown/the-final-countdown-teclado.pdf" },
-          { "title": "Saxo", "pdf": "PDF/Vice Group/The Final Countdown/the-final-countdown-saxo.pdf" },
-          { "title": "Letra", "pdf": "PDF/Vice Group/The Final Countdown/the-final-countdown-letra.pdf" }
+          { "title": "General", "pdf": "PDF/Vice Group/The Final Countdown/The Final Countdown.pdf" },
+          { "title": "Acordes", "pdf": "PDF/Vice Group/The Final Countdown/The Final Countdown - Acords.pdf" },
+          { "title": "Teclado", "pdf": "PDF/Vice Group/The Final Countdown/The Final Countdown - Teclat.pdf" },
+          { "title": "Letra", "pdf": "PDF/Vice Group/The Final Countdown/The Final Countdown - Lletra.pdf" }
+        ]
+      },
+      {
+        "title": "Have You Ever Seen The Rain?",
+        "items": [
+          { "title": "General", "pdf": "PDF/Vice Group/Have You Ever Seen The Rain?/Have You Ever Seen The Rain.pdf" },
+          { "title": "Acordes", "pdf": "PDF/Vice Group/Have You Ever Seen The Rain?/Have You Ever Seen The Rain - Acords.pdf" },
+          { "title": "Teclado", "pdf": "PDF/Vice Group/Have You Ever Seen The Rain?/Have You Ever Seen The Rain - Teclat.pdf" },
+          { "title": "Letra", "pdf": "PDF/Vice Group/Have You Ever Seen The Rain?/Have You Ever Seen The Rain - Lletra.pdf" }
+        ]
+      },
+      {
+        "title": "The Final Countdown (Reprise)",
+        "items": [
+          { "title": "General", "pdf": "PDF/Vice Group/The Final Countdown/The Final Countdown (Reprise).pdf" },
+          { "title": "Acordes", "pdf": "PDF/Vice Group/The Final Countdown/The Final Countdown (Reprise) - Acords.pdf" },
+          { "title": "Teclado", "pdf": "PDF/Vice Group/The Final Countdown/The Final Countdown (Reprise) - Teclat.pdf" },
+          { "title": "Letra", "pdf": "PDF/Vice Group/The Final Countdown/The Final Countdown - Lletra.pdf" }
         ]
       }
     ]
