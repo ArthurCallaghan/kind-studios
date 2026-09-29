@@ -74,7 +74,7 @@
 
   async function loadPdfConfig() {
     try {
-      const response = await fetch("pdf-config.json?v=20260924-1", { cache: "no-store" });
+      const response = await fetch("pdf-config.json?v=20260929-1", { cache: "no-store" });
       if (!response.ok) throw new Error("No disponible");
       const data = await response.json();
       cfg.schedules = data.schedules || {};
@@ -161,7 +161,7 @@
 
   async function loadArchivedChecklistStatus() {
     try {
-      const response = await fetch("checklist-status.json?v=20260922-1", { cache: "no-store" });
+      const response = await fetch("checklist-status.json?v=20260929-1", { cache: "no-store" });
       if (!response.ok) return;
       archivedChecklistStatus = await response.json();
       if ($("#checklist-screen").classList.contains("active")) renderChecklist();
